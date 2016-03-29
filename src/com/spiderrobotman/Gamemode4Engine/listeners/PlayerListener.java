@@ -18,7 +18,11 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerPreLogin(AsyncPlayerPreLoginEvent e) {
-        AccessHandler.handlePlayerPreLogin(e);
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent e) {
+
     }
 
     @EventHandler
@@ -27,6 +31,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent e) {
+        AccessHandler.handlePlayerMove(e);
     }
 
     @EventHandler

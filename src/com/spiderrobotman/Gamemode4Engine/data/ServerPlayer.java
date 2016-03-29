@@ -14,10 +14,23 @@ public class ServerPlayer{
     private UUID uuid;
     private boolean online = true;
 
-    public ServerPlayer(UUID uuid) {
-        Player p = Bukkit.getPlayer(uuid);
-        if(p == null) {
+    public ServerPlayer(UUID id) {
+        Player p = Bukkit.getPlayer(id);
+        if(p == null || !p.isOnline()) {
             this.online = false;
+            //get data from database
+        } else {
+            this.name = p.getName();
+        }
+    }
+
+    public ServerPlayer(Player p) {
+        this.uuid = p.getUniqueId();
+        if(!p.isOnline()) {
+            this.online = false;
+            //get data from database
+        } else {
+            this.name = p.getName();
         }
     }
 
@@ -29,8 +42,16 @@ public class ServerPlayer{
         return this.uuid;
     }
 
-    public boolean online() {
+    public Player getPlayer() {
+        return Bukkit.getPlayer(this.uuid);
+    }
+
+    public boolean isOnline() {
         return this.online;
+    }
+
+    public boolean hasAccess() {
+        return true;
     }
 
 }
