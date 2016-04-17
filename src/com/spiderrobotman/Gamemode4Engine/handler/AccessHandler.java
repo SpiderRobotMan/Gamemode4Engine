@@ -27,6 +27,7 @@ public class AccessHandler {
         ServerPlayer sp = new ServerPlayer(p);
         if(!sp.hasAccess()) {
             p.setGameMode(GameMode.SPECTATOR);
+            e.setJoinMessage(null);
         }
     }
 
