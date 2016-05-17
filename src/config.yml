@@ -1,0 +1,12 @@
+main_database:
+    host: ""
+    port: ""
+    user: ""
+    password: ""
+    database: ""
+access_database:
+    host: ""
+    port: ""
+    user: ""
+    password: ""
+    database: ""

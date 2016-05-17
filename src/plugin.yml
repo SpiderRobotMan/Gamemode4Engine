@@ -1,0 +1,54 @@
+name: Gamemode4Engine
+version: 1.0.0
+description: This plugin handles the Gamemode 4 server backend.
+author: SpiderRobotMan
+website: http://www.spiderrobotman.com
+
+main: com.spiderrobotman.Gamemode4Engine.main.Gamemode4Engine
+
+commands:
+ ban:
+   description: Permanently ban a player.
+   permission: gm4.ban
+   usage: /ban <player> [<reason>]
+ kick:
+   description: Kick a player.
+   permission: gm4.kick
+   usage: /kick <player> [<reason>]
+ tempban:
+   description: Temporarily ban a player.
+   permission: gm4.tempban
+   usage: /tempban <player> <time> [<reason>]
+ unban:
+   description: Unban a player.
+   permission: gm4.unban
+   usage: /unban <player>
+
+permissions:
+ gm4.ban:
+   description: Allows you to ban players.
+   default: op
+ gm4.kick:
+   description: Allows you to kick players.
+   default: op
+ gm4.kick.bypass:
+   description: Allows you to bypass kick commands.
+   default: op
+   children:
+     gm4.kick: true
+ gm4.ban.bypass:
+   description: Allows you to bypass ban commands.
+   default: op
+   children:
+     gm4.ban: true
+ gm4.tempban:
+   description: Allows you to tempban players.
+   default: op
+ gm4.tempban.bypass:
+   description: Allows you to bypass tempban commands.
+   default: op
+   children:
+     gm4.tempban: true
+ gm4.unban:
+   description: Allows you to unban players.
+   default: op

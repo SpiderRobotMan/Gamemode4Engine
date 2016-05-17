@@ -1,45 +1,34 @@
 package com.spiderrobotman.Gamemode4Engine.listeners;
 
-import com.spiderrobotman.Gamemode4Engine.handler.AccessHandler;
+import com.spiderrobotman.Gamemode4Engine.main.Gamemode4Engine;
+import com.spiderrobotman.Gamemode4Engine.util.TextUtil;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.player.*;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+
+import java.util.HashMap;
 
 /**
- * Created by spide on 3/28/2016.
+ * Project: Gamemode4Engine
+ * Author: SpiderRobotMan
+ * Date: May 17 2016
+ * Website: http://www.spiderrobotman.com
  */
 public class PlayerListener implements Listener {
 
     @EventHandler
-    public void onPlayerLogin(PlayerLoginEvent e) {
-        AccessHandler.handlePlayerLogin(e);
-    }
-
-    @EventHandler
     public void onPlayerPreLogin(AsyncPlayerPreLoginEvent e) {
+        HashMap<String, Object> bmap = Gamemode4Engine.db.fetchPlayerBans(e.getUniqueId());
+
+        if (bmap != null) e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, TextUtil.buildBanMessage(bmap));
+
+        HashMap<String, Object> pmap = Gamemode4Engine.adb.fetchPlayerAccess(e.getUniqueId(), e.getName());
+
+        if (pmap == null) {
+            e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST, TextUtil.buildAccessMessage(e.getName()));
+        } else {
+            Gamemode4Engine.db.updatePlayer(e.getUniqueId(), e.getName(), e.getAddress().getHostAddress());
+        }
     }
 
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent e) {
-
-    }
-
-    @EventHandler
-    public void onPlayerLeave(PlayerQuitEvent e) {
-    }
-
-    @EventHandler
-    public void onPlayerMove(PlayerMoveEvent e) {
-        AccessHandler.handlePlayerMove(e);
-    }
-
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent e) {
-
-    }
-
-    @EventHandler
-    public void onPlayerDamage(EntityDamageEvent e) {
-    }
 }

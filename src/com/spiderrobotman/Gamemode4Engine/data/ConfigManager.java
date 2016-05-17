@@ -1,98 +1,106 @@
 package com.spiderrobotman.Gamemode4Engine.data;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import com.spiderrobotman.Gamemode4Engine.util.TextUtil;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
+import java.util.HashMap;
 
-import static com.spiderrobotman.Gamemode4Engine.main.Gamemode4Engine.plugin;
-import static com.spiderrobotman.Gamemode4Engine.util.TextUtil.logError;
-import static com.spiderrobotman.Gamemode4Engine.util.TextUtil.logInfo;
 
-/**
- * Created by spide on 3/28/2016.
- */
 public class ConfigManager {
 
-    public static JSONObject config;
-    private static File f = new File(plugin().getDataFolder() + "/config.json");
+    private final JavaPlugin plugin;
+    private HashMap<String, Config> configs = new HashMap<>();
 
-    public static boolean init() {
-        if(!injectDefaults(f)) {
-            return false;
-        }
-        config = readFile(f);
-        if(config == null) {
-            return false;
-        }
-        return true;
+    public ConfigManager(JavaPlugin plugin) {
+        this.plugin = plugin;
     }
 
-    public static JSONObject getConfig() {
-        return config;
+    public Config getConfig(String name) {
+        if (!configs.containsKey(name))
+            configs.put(name, new Config(name));
+
+        return configs.get(name);
     }
 
-    public static boolean updateConfig() {
-        JSONObject file = readFile(f);
-        if(file != null && file != config) {
-            config = file;
-            return true;
+    public Config saveConfig(String name) {
+        return getConfig(name).save();
+    }
+
+    public Config reloadConfig(String name) {
+        return getConfig(name).reload();
+    }
+
+    public class Config {
+
+        private String name;
+        private File file;
+        private YamlConfiguration config;
+
+        Config(String name) {
+            this.name = name;
         }
-        return false;
-    }
 
-    public static boolean writeFile(File f, JSONObject obj) {
-        if(!f.exists()) {
-            if(f.mkdir()) {
-                logInfo("config.json successfully created.");
+        public Config save() {
+            if ((this.config == null) || (this.file == null))
+                return this;
+            try {
+                if (config.getConfigurationSection("").getKeys(true).size() != 0)
+                    config.save(this.file);
+            } catch (IOException ex) {
+                TextUtil.logError("Config save failed! ERROR: " + ex.getMessage());
             }
-        }
-        if(obj == null) {
-            return false;
-        }
-        try {
-            FileWriter file = new FileWriter(f);
-            file.write(obj.toJSONString());
-            file.flush();
-            file.close();
-            return true;
-        } catch (IOException e) {
-            logError("config.json cannot be written!");
-            return false;
-        }
-    }
-
-    public static JSONObject readFile(File f) {
-        JSONParser parser = new JSONParser();
-        try {
-            Object obj = parser.parse(new FileReader(f));
-            return (JSONObject) obj;
-        } catch (FileNotFoundException e) {
-            logError("config.json not found!");
-        } catch (IOException e) {
-            logError("config.json cannot be read!");
-        } catch (ParseException e) {
-            logError("config.json invalid format!");
-        }
-        return null;
-    }
-
-    public static boolean injectDefaults(File f) {
-        InputStream inputStream = plugin().getClass().getResourceAsStream("config.json");
-        JSONParser jsonParser = new JSONParser();
-        JSONObject defaults;
-        try {
-            defaults = (JSONObject)jsonParser.parse(new InputStreamReader(inputStream, "UTF-8"));
-        } catch (IOException e) {
-            logError("config.json defaults cannot be written!");
-            return false;
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return false;
+            return this;
         }
 
-        return writeFile(f, defaults);
+        public YamlConfiguration get() {
+            if (this.config == null)
+                reload();
+
+            return this.config;
+        }
+
+        public Config saveDefaultConfig() {
+            file = new File(plugin.getDataFolder(), this.name);
+
+            plugin.saveResource(this.name, false);
+
+            return this;
+        }
+
+        Config reload() {
+            if (file == null)
+                this.file = new File(plugin.getDataFolder(), this.name);
+
+            this.config = YamlConfiguration.loadConfiguration(file);
+
+            Reader defConfigStream;
+            try {
+                defConfigStream = new InputStreamReader(plugin.getResource(this.name), "UTF8");
+
+                YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
+                this.config.setDefaults(defConfig);
+            } catch (UnsupportedEncodingException | NullPointerException e) {
+                TextUtil.logError("Config reload failed!");
+            }
+            return this;
+        }
+
+        public Config copyDefaults(boolean force) {
+            get().options().copyDefaults(force);
+            return this;
+        }
+
+        public Config set(String key, Object value) {
+            get().set(key, value);
+            return this;
+        }
+
+        public Object get(String key) {
+            return get().get(key);
+        }
     }
 
 }
+
