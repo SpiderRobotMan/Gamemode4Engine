@@ -71,14 +71,17 @@ public class NickCommand implements CommandExecutor {
                         setNickName(sender, args[0]);
                         return true;
                     }
-
-                    Player target = Bukkit.getPlayerExact(args[1]);
-                    if (target != null) {
-                        setNickName(target, args[0]);
-                        return true;
+                    if (sender.hasPermission("gm4.nickname.others")) {
+                        Player target = Bukkit.getPlayerExact(args[1]);
+                        if (target != null) {
+                            setNickName(target, args[0]);
+                            return true;
+                        } else {
+                            sender.sendMessage(ChatColor.RED + "Player " + ChatColor.GOLD + args[1] + ChatColor.RED + " not found!");
+                            return true;
+                        }
                     } else {
-                        sender.sendMessage(ChatColor.RED + "Player " + ChatColor.GOLD + args[1] + ChatColor.RED + " not found!");
-                        return true;
+                        sender.sendMessage(ChatColor.RED + "You don't have permission to give others nicknames!");
                     }
                 }
 
