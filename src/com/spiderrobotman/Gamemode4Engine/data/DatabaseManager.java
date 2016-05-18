@@ -25,12 +25,12 @@ public class DatabaseManager {
         this.password = password;
         try {
             Connection c = openConnection();
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             TextUtil.logError("MySQL cannot connect! ERROR: " + e.getMessage());
         }
     }
 
-    private Connection openConnection() throws SQLException, ClassNotFoundException {
+    public Connection openConnection() throws SQLException {
         if (hasConnection()) {
             return this.connection;
         }
@@ -38,7 +38,7 @@ public class DatabaseManager {
         String connectionURL = "jdbc:mysql://" + this.hostname + ":" + this.port;
 
         if (this.database != null) {
-            connectionURL = connectionURL + "/" + this.database;
+            connectionURL = connectionURL + "/" + this.database + "?autoReconnect=true&tcpKeepAlive=true&connectTimeout=0&socketTimeout=0&validationQuery=\"SELECT 1\"";
         }
 
         this.connection = DriverManager.getConnection(connectionURL, this.user, this.password);
@@ -46,14 +46,12 @@ public class DatabaseManager {
     }
 
     private boolean hasConnection() throws SQLException {
-        return this.connection != null && !this.connection.isClosed();
+        return this.connection != null;
     }
 
     public boolean updatePlayer(UUID uuid, String name, String ip) {
         try {
-            while (!this.hasConnection()) {
-                this.openConnection();
-            }
+            this.connection = openConnection();
             PreparedStatement ps = connection.prepareStatement("REPLACE INTO server_players (uuid, current_name, last_online, ip) VALUES (?, ?, ?, ?);");
             ps.setString(1, uuid.toString());
             ps.setString(2, name);
@@ -62,7 +60,7 @@ public class DatabaseManager {
 
             return (ps.executeUpdate() >= 1);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             TextUtil.logError("MySQL cannot set player ban data! ERROR: " + e.getMessage());
         }
         return false;
@@ -70,9 +68,7 @@ public class DatabaseManager {
 
     public HashMap<String, Object> fetchPlayer(UUID uuid) {
         try {
-            while (!this.hasConnection()) {
-                this.openConnection();
-            }
+            this.connection = openConnection();
             PreparedStatement ps = this.connection.prepareStatement("SELECT * FROM server_players WHERE uuid = ?;");
             ps.setString(1, uuid.toString());
             ResultSet res = ps.executeQuery();
@@ -81,7 +77,7 @@ public class DatabaseManager {
                 return resultToMap(res);
             }
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             TextUtil.logError("MySQL cannot get player data! ERROR: " + e.getMessage());
         }
         return null;
@@ -89,9 +85,7 @@ public class DatabaseManager {
 
     private HashMap<String, Object> fetchPlayer(String name) {
         try {
-            while (!this.hasConnection()) {
-                this.openConnection();
-            }
+            this.connection = openConnection();
             PreparedStatement ps = this.connection.prepareStatement("SELECT * FROM server_players WHERE current_name = ?;");
             ps.setString(1, name);
             ResultSet res = ps.executeQuery();
@@ -100,7 +94,7 @@ public class DatabaseManager {
                 return resultToMap(res);
             }
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             TextUtil.logError("MySQL cannot get player data! ERROR: " + e.getMessage());
         }
         return null;
@@ -108,9 +102,7 @@ public class DatabaseManager {
 
     public HashMap<String, Object> fetchPlayerAccess(UUID uuid, String name) {
         try {
-            while (!this.hasConnection()) {
-                this.openConnection();
-            }
+            this.connection = openConnection();
             PreparedStatement ps = this.connection.prepareStatement("SELECT * FROM serverWhitelist WHERE UUID = ? OR username = ?;");
             ps.setString(1, uuid.toString());
             ps.setString(2, name);
@@ -126,7 +118,7 @@ public class DatabaseManager {
                 return resultToMap(res);
             }
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             TextUtil.logError("MySQL cannot get player access data! ERROR: " + e.getMessage());
         }
         return null;
@@ -134,9 +126,7 @@ public class DatabaseManager {
 
     public HashMap<String, Object> banPlayer(UUID uuid, String by, String reason) {
         try {
-            while (!this.hasConnection()) {
-                this.openConnection();
-            }
+            this.connection = openConnection();
             PreparedStatement ps = connection.prepareStatement("INSERT INTO server_bans (uuid, reference_id, reason, banned_by) VALUES (?, ?, ?, ?);");
             ps.setString(1, uuid.toString());
             ps.setString(2, UUID.randomUUID().toString().replace("-", ""));
@@ -146,7 +136,7 @@ public class DatabaseManager {
 
             return fetchPlayerBans(uuid);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             TextUtil.logError("MySQL cannot set player ban data! ERROR: " + e.getMessage());
         }
         return null;
@@ -154,9 +144,7 @@ public class DatabaseManager {
 
     public HashMap<String, Object> tempbanPlayer(UUID uuid, String by, String reason, long time) {
         try {
-            while (!this.hasConnection()) {
-                this.openConnection();
-            }
+            this.connection = openConnection();
             PreparedStatement ps = connection.prepareStatement("INSERT INTO server_bans (uuid, reference_id, reason, banned_by, type, time_end) VALUES (?, ?, ?, ?, ?, ?);");
             ps.setString(1, uuid.toString());
             ps.setString(2, UUID.randomUUID().toString().replace("-", ""));
@@ -168,7 +156,7 @@ public class DatabaseManager {
 
             return fetchPlayerBans(uuid);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             TextUtil.logError("MySQL cannot set player tempban data! ERROR: " + e.getMessage());
         }
         return null;
@@ -176,10 +164,7 @@ public class DatabaseManager {
 
     public boolean unbanPlayer(String name) {
         try {
-            while (!this.hasConnection()) {
-                this.openConnection();
-            }
-
+            this.connection = openConnection();
             HashMap<String, Object> obj = this.fetchPlayer(name);
 
             if (obj == null) return false;
@@ -191,7 +176,7 @@ public class DatabaseManager {
 
             return (ps.executeUpdate() >= 1);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             TextUtil.logError("MySQL cannot set player tempban data! ERROR: " + e.getMessage());
         }
         return false;
@@ -199,9 +184,7 @@ public class DatabaseManager {
 
     public HashMap<String, Object> fetchPlayerBans(UUID uuid) {
         try {
-            while (!this.hasConnection()) {
-                this.openConnection();
-            }
+            this.connection = openConnection();
             PreparedStatement ps = this.connection.prepareStatement("SELECT * FROM server_bans WHERE uuid = ?;");
             ps.setString(1, uuid.toString());
             ResultSet res = ps.executeQuery();
@@ -228,7 +211,7 @@ public class DatabaseManager {
 
             if (!out.isEmpty()) return out;
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (SQLException e) {
             TextUtil.logError("MySQL cannot get player data! ERROR: " + e.getMessage());
         }
         return null;

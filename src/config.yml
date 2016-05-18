@@ -10,3 +10,4 @@ access_database:
     user: ""
     password: ""
     database: ""
+nickname_prefix: "~"

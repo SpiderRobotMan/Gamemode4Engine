@@ -25,14 +25,14 @@ public class BanCommand implements CommandExecutor {
         if (cs instanceof Player) {
             Player sender = (Player) cs;
 
-            if (sender.isOp() || sender.hasPermission("gm4.ban")) { //TODO register 'gm4.kick' permission.
+            if (sender.isOp() || sender.hasPermission("gm4.ban")) {
                 if (args.length >= 1) {
                     Player target = Bukkit.getPlayerExact(args[0]);
                     if (target == null) {
                         sender.sendMessage(ChatColor.RED + "Player not found!");
                         return true;
                     }
-                    if (!target.hasPermission("gm4.ban.bypass")) { //TODO register 'gm4.kick.bypass' permission.
+                    if (!target.hasPermission("gm4.ban.bypass")) {
                         final UUID trg = target.getUniqueId();
                         final String send = sender.getDisplayName();
                         String reasonbuild = "";

@@ -23,6 +23,26 @@ commands:
    description: Unban a player.
    permission: gm4.unban
    usage: /unban <player>
+ tp:
+   description: Teleport.
+   aliases: [tpunsafe, teleport]
+   permission: gm4.teleport
+   usage: /tp <player> [<player>]
+ nick:
+   description: Give players a nickname.
+   aliases: [nickname]
+   permission: gm4.nickname
+   usage: /nick <nick> [<player>]
+ openinv:
+   description: Open a players inventory.
+   aliases: [invsee, openinventory, inventorysee]
+   permission: gm4.openinv
+   usage: /openinv <player>
+ openend:
+   description: Open a players enderchest.
+   aliases: [endsee, enderchest, openenderchest, enderchestsee]
+   permission: gm4.openinv
+   usage: /openend <player>
 
 permissions:
  gm4.ban:
@@ -51,4 +71,32 @@ permissions:
      gm4.tempban: true
  gm4.unban:
    description: Allows you to unban players.
+   default: op
+ gm4.teleport:
+   description: Allows you to teleport.
+   default: op
+ gm4.teleport.others:
+   description: Allows you to teleport others.
+   default: op
+   children:
+     gm4.teleport: true
+ gm4.nickname:
+   description: Allows you to nickname yourself.
+   default: op
+ gm4.nickname.others:
+   description: Allows you to nickname others.
+   default: op
+   children:
+     gm4.nickname: true
+ gm4.openinv:
+   description: Open a players inventory.
+   default: op
+ gm4.openinv.bypass:
+   description: Disallow allow openinv on this player.
+   default: op
+ gm4.openinv.override:
+   description: Bypass openinv bypass.
+   default: op
+ gm4.openinv.edit:
+   description: Allow editing of inventory.
    default: op

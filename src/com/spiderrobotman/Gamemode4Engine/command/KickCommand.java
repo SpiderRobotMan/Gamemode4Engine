@@ -21,14 +21,14 @@ public class KickCommand implements CommandExecutor {
         if (cs instanceof Player) {
             Player sender = (Player) cs;
 
-            if (sender.isOp() || sender.hasPermission("gm4.kick")) { //TODO register 'gm4.kick' permission.
+            if (sender.isOp() || sender.hasPermission("gm4.kick")) {
                 if (args.length >= 1) {
                     Player target = Bukkit.getPlayerExact(args[0]);
                     if (target == null) {
                         sender.sendMessage(ChatColor.RED + "Player not found!");
                         return true;
                     }
-                    if (!target.hasPermission("gm4.kick.bypass")) { //TODO register 'gm4.kick.bypass' permission.
+                    if (!target.hasPermission("gm4.kick.bypass")) {
                         if (args.length >= 2) {
                             StringBuilder builder = new StringBuilder();
                             for (int i = 1; i < args.length; i++) {

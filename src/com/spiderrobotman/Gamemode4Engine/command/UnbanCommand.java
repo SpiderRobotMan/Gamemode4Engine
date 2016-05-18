@@ -27,7 +27,7 @@ public class UnbanCommand implements CommandExecutor {
                         sender.sendMessage(ChatColor.GREEN + "Player " + ChatColor.GOLD + args[0] + ChatColor.GREEN + " has been unbanned!");
                         return true;
                     } else {
-                        sender.sendMessage(ChatColor.RED + "Player " + ChatColor.GOLD + args[0] + ChatColor.RED + " could not be unbanned!");
+                        sender.sendMessage(ChatColor.RED + "Player " + ChatColor.GOLD + args[0] + ChatColor.RED + " is not currently banned!");
                         return true;
                     }
                 } else {
