@@ -58,7 +58,9 @@ public class PlayerListener implements Listener {
         String nick = Gamemode4Engine.nicks.get().getString(e.getPlayer().getUniqueId().toString());
         if (nick != null) {
             if (!nick.equalsIgnoreCase(e.getPlayer().getName())) {
-                e.getPlayer().setPlayerListName(Gamemode4Engine.config.get().getString("nickname_prefix").replace("&", "§") + ChatColor.RESET + nick.replace("&", "§"));
+                String displayNick = Gamemode4Engine.config.get().getString("nickname_prefix").replace("&", "§") + ChatColor.RESET + nick.replace("&", "§");
+                e.getPlayer().setPlayerListName(displayNick);
+                e.setJoinMessage(displayNick + " joined the game");
             } else {
                 e.getPlayer().setDisplayName(e.getPlayer().getName());
             }
