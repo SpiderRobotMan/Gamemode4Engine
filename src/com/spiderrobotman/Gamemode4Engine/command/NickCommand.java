@@ -94,6 +94,9 @@ public class NickCommand implements CommandExecutor {
     public void setNickName(Player p, String nickname) {
         if (!nickname.equalsIgnoreCase("-reset")) {
             String nick = nickname.replace("§", "&");
+            if (p.hasPermission("gm4.rank.patreon") && !p.hasPermission("gm4.rank.cmod") && !p.hasPermission("gm4.rank.mod") && !p.hasPermission("gm4.rank.admin")) {
+                nick = ChatColor.stripColor(nick);
+            }
             Gamemode4Engine.nicks.get().set(p.getUniqueId().toString(), nick);
             p.sendMessage(ChatColor.GREEN + "Your nickname has been set to: " + ChatColor.RESET + nick);
         } else {
