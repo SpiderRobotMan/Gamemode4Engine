@@ -1,5 +1,6 @@
 package com.spiderrobotman.Gamemode4Engine.listeners;
 
+import com.spiderrobotman.Gamemode4Engine.command.NickCommand;
 import com.spiderrobotman.Gamemode4Engine.handler.SpecialPlayerInventory;
 import com.spiderrobotman.Gamemode4Engine.main.Gamemode4Engine;
 import com.spiderrobotman.Gamemode4Engine.util.TextUtil;
@@ -43,26 +44,14 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent e) {
-        String nick = Gamemode4Engine.nicks.get().getString(e.getPlayer().getUniqueId().toString());
-        if (nick != null) {
-            if (!nick.equalsIgnoreCase(e.getPlayer().getName())) {
-                e.getPlayer().setDisplayName(Gamemode4Engine.config.get().getString("nickname_prefix").replace("&", "§") + ChatColor.RESET + nick.replace("&", "§") + ChatColor.RESET);
-            } else {
-                e.getPlayer().setDisplayName(e.getPlayer().getName());
-            }
-        }
+        NickCommand.updatePlayerName(e.getPlayer());
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
-        String nick = Gamemode4Engine.nicks.get().getString(e.getPlayer().getUniqueId().toString());
-        if (nick != null) {
-            if (!nick.equalsIgnoreCase(e.getPlayer().getName())) {
-                e.getPlayer().setPlayerListName(Gamemode4Engine.config.get().getString("nickname_prefix").replace("&", "§") + ChatColor.RESET + nick.replace("&", "§"));
-            } else {
-                e.getPlayer().setDisplayName(e.getPlayer().getName());
-            }
-        }
+        NickCommand.updatePlayerName(e.getPlayer());
+
+        e.setJoinMessage(ChatColor.YELLOW + ChatColor.stripColor(NickCommand.getNickName(e.getPlayer())) + " joined the game");
 
         final Player player = e.getPlayer();
         new BukkitRunnable() {
