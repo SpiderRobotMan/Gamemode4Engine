@@ -31,7 +31,6 @@ commands:
  nick:
    description: Give players a nickname.
    aliases: [nickname]
-   permission: gm4.nickname
    usage: /nick <nick> [<player>]
  openinv:
    description: Open a players inventory.
@@ -43,6 +42,14 @@ commands:
    aliases: [endsee, enderchest, openenderchest, enderchestsee]
    permission: gm4.openinv
    usage: /openend <player>
+ back:
+   description: Go back to previous location.
+   aliases: [backunsafe, goback, last, lastlocation]
+   permission: gm4.back
+   usage: /back
+ realname:
+   description: Show real name of user with nickname.
+   usage: /realname
 
 permissions:
  gm4.ban:
@@ -99,4 +106,19 @@ permissions:
    default: op
  gm4.openinv.edit:
    description: Allow editing of inventory.
+   default: op
+gm4.rank.patreon:
+   description: Patreon rank.
+   default: false
+gm4.rank.cmod:
+   description: CMOD rank.
+   default: false
+gm4.rank.mod:
+   description: MOD rank.
+   default: false
+gm4.rank.admin:
+   description: Admin rank.
+   default: op
+gm4.back:
+   description: Allows you to return to previous location.
    default: op

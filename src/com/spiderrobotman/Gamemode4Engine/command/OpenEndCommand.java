@@ -39,7 +39,7 @@ public class OpenEndCommand implements CommandExecutor {
                     if (history != null) {
                         uuid = history;
                     } else {
-                        TextUtil.sendCommandFormatError(player, "/openend <player>");
+                        TextUtil.sendCommandFormatError(player, "/" + alias + " <player>");
                         return true;
                     }
                 } else {

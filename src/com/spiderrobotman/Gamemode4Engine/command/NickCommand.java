@@ -4,11 +4,19 @@ import com.spiderrobotman.Gamemode4Engine.main.Gamemode4Engine;
 import com.spiderrobotman.Gamemode4Engine.util.TextUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Project: Gamemode4Engine
@@ -18,14 +26,19 @@ import org.bukkit.entity.Player;
  */
 public class NickCommand implements CommandExecutor {
 
-    public static String getFullName(Player p) {
+    public static Map<UUID, String> nicks = new ConcurrentHashMap<>();
+
+    private static String getFullName(Player p) {
         String fin = getPrefix(p) + getNickName(p);
-        return fin.replace("&", "§");
+        return fin.replace("&", "§") + ChatColor.RESET;
     }
 
     public static String getNickName(Player p) {
         String nick = Gamemode4Engine.nicks.get().getString(p.getUniqueId().toString());
         String nick_pre = Gamemode4Engine.config.get().getString("nickname_prefix");
+
+        nicks.put(p.getUniqueId(), nick);
+
         if (nick != null && !nick.isEmpty() && !nick.equalsIgnoreCase(p.getName())) {
             return (nick_pre + nick).replace("&", "§");
         } else {
@@ -44,11 +57,9 @@ public class NickCommand implements CommandExecutor {
 
         if (p.hasPermission("gm4.rank.admin")) {
             prefix += cf.getString("admin_prefix");
-        }
-        if (p.hasPermission("gm4.rank.mod")) {
+        } else if (p.hasPermission("gm4.rank.mod")) {
             prefix += cf.getString("mod_prefix");
-        }
-        if (p.hasPermission("gm4.rank.cmod")) {
+        } else if (p.hasPermission("gm4.rank.cmod")) {
             prefix += cf.getString("cmod_prefix");
         }
         if (p.hasPermission("gm4.rank.patreon")) {
@@ -57,50 +68,112 @@ public class NickCommand implements CommandExecutor {
         return prefix.replace("&", "§");
     }
 
+    private static List<String> getPossiblePlayerNames() {
+        List<String> names = new ArrayList<>();
+        for (org.bukkit.World world : Bukkit.getServer().getWorlds()) {
+            String worldname = world.getName();
+
+            File playersFolder = new File(worldname + "/playerdata/");
+            String[] arr = playersFolder.list((f, s) -> s.endsWith(".dat"));
+            for (String a : arr) {
+                UUID uuid = UUID.fromString(a.replaceAll(".dat$", ""));
+                OfflinePlayer p = Bukkit.getOfflinePlayer(uuid);
+                if (p != null) {
+                    names.add(p.getName());
+                    String nick1 = nicks.get(p.getUniqueId());
+                    if (nick1 != null) {
+                        String nick = ChatColor.stripColor(nick1.replace("&", "§"));
+                        if (!nick.isEmpty()) names.add(nick);
+                    }
+                }
+            }
+
+        }
+        return names;
+    }
+
+    private static boolean nameMatch(String name) {
+        int length = name.length();
+        for (String pn : getPossiblePlayerNames()) {
+            if (name.toLowerCase().contains(pn.toLowerCase())) {
+                int diff = length - pn.length();
+                if (!(diff >= 5) || !(diff <= -5)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean onCommand(CommandSender cs, Command command, String alias, String[] args) {
         if (cs instanceof Player) {
             Player sender = (Player) cs;
-            if (sender.isOp() || sender.hasPermission("gm4.nickname")) {
-                if (args.length == 1) {
-                    setNickName(sender, args[0]);
+            if (sender.isOp() || sender.hasPermission("gm4.nickname") || sender.hasPermission("gm4.rank.patreon")) {
+                if (args.length <= 0) {
+                    TextUtil.sendCommandFormatError(sender, "/" + alias + " <nick [-reset]> [<player>]");
                     return true;
                 }
-                if (args.length == 2) {
-                    if (args[1].equalsIgnoreCase(sender.getName())) {
-                        setNickName(sender, args[0]);
-                        return true;
-                    }
-                    if (sender.hasPermission("gm4.nickname.others")) {
-                        Player target = Bukkit.getPlayerExact(args[1]);
-                        if (target != null) {
-                            setNickName(target, args[0]);
-                            return true;
-                        } else {
-                            sender.sendMessage(ChatColor.RED + "Player " + ChatColor.GOLD + args[1] + ChatColor.RED + " not found!");
-                            return true;
-                        }
-                    } else {
-                        sender.sendMessage(ChatColor.RED + "You don't have permission to give others nicknames!");
-                    }
-                }
+                Gamemode4Engine.plugin().getServer().getScheduler().runTaskAsynchronously(Gamemode4Engine.plugin(), () -> {
+                    boolean cont = true;
+                    if (args.length >= 1) {
+                        int color_count = (args[0].length() - args[0].replace("&", "").length()) * 2;
+                        int length = args[0].length() - color_count;
 
-                TextUtil.sendCommandFormatError(sender, "/nick <nick> [<player>]");
+                        if (length > 15) {
+                            sender.sendMessage(ChatColor.RED + "A nickname can only be 15 visible characters long! Yours is " + length + ".");
+                            cont = false;
+                        } else if (length < 3) {
+                            sender.sendMessage(ChatColor.RED + "A nickname must have atleast 3 visible characters! Yours has " + length + ".");
+                            cont = false;
+                        } else if (nameMatch(args[0])) {
+                            sender.sendMessage(ChatColor.RED + "This nickname is too similar to another player!");
+                            cont = false;
+                        }
+                    }
+                    if (cont) {
+                        if (args.length == 1) {
+                            setNickName(sender, args[0]);
+                        }
+                        if (args.length == 2) {
+                            if (args[1].equalsIgnoreCase(sender.getName())) {
+                                setNickName(sender, args[0]);
+                            } else if (sender.hasPermission("gm4.nickname.others")) {
+                                Player target = Bukkit.getPlayerExact(args[1]);
+                                if (target != null) {
+                                    setNickName(target, args[0]);
+                                    if (target.hasPermission("gm4.rank.patreon") && !target.hasPermission("gm4.rank.cmod") && !target.hasPermission("gm4.rank.mod") && !target.hasPermission("gm4.rank.admin")) {
+                                        sender.sendMessage(ChatColor.GREEN + "Their nickname has been set to: " + ChatColor.RESET + ChatColor.stripColor(args[0].replace("&", "§")));
+                                    } else {
+                                        sender.sendMessage(ChatColor.GREEN + "Their nickname has been set to: " + ChatColor.RESET + args[0].replace("&", "§"));
+                                    }
+                                } else {
+                                    sender.sendMessage(ChatColor.RED + "Player " + ChatColor.GOLD + args[1] + ChatColor.RED + " not found!");
+                                }
+                            } else {
+                                sender.sendMessage(ChatColor.RED + "You don't have permission to give others nicknames!");
+                            }
+                        }
+                    }
+                });
             }
         }
         return true;
     }
 
-    public void setNickName(Player p, String nickname) {
+    private void setNickName(Player p, String nickname) {
         if (!nickname.equalsIgnoreCase("-reset")) {
-            String nick = nickname.replace("§", "&");
+            String nick = nickname.replace("&", "§");
             if (p.hasPermission("gm4.rank.patreon") && !p.hasPermission("gm4.rank.cmod") && !p.hasPermission("gm4.rank.mod") && !p.hasPermission("gm4.rank.admin")) {
                 nick = ChatColor.stripColor(nick);
             }
+            nick = nick.replace("§", "&");
             Gamemode4Engine.nicks.get().set(p.getUniqueId().toString(), nick);
-            p.sendMessage(ChatColor.GREEN + "Your nickname has been set to: " + ChatColor.RESET + nick);
+            nicks.put(p.getUniqueId(), nick);
+            p.sendMessage(ChatColor.GREEN + "Your nickname has been set to: " + ChatColor.RESET + nick.replace("&", "§"));
         } else {
             Gamemode4Engine.nicks.get().set(p.getUniqueId().toString(), "");
+            nicks.put(p.getUniqueId(), "");
             p.sendMessage(ChatColor.GREEN + "Your nickname has been reset to: " + ChatColor.RESET + p.getName());
         }
         Gamemode4Engine.nicks.save();

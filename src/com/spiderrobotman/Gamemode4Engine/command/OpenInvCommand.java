@@ -32,14 +32,14 @@ public class OpenInvCommand implements CommandExecutor {
             if (player.isOp() || player.hasPermission("gm4.openinv")) {
 
                 UUID history = openInvHistory.get(player.getUniqueId());
-                if (history == null) {
-                    TextUtil.sendCommandFormatError(player, "/openinv <player>");
-                    return true;
-                }
 
                 final UUID uuid;
 
                 if (args.length < 1) {
+                    if (history == null) {
+                        TextUtil.sendCommandFormatError(player, "/" + alias + " <player>");
+                        return true;
+                    }
                     uuid = history;
                 } else {
                     uuid = UUIDUtil.getUUIDOf(args[0]);

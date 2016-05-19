@@ -31,7 +31,7 @@ public class UnbanCommand implements CommandExecutor {
                         return true;
                     }
                 } else {
-                    TextUtil.sendCommandFormatError(sender, "/unban <player>");
+                    TextUtil.sendCommandFormatError(sender, "/" + alias + " <player>");
                 }
             }
         }

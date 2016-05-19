@@ -60,7 +60,7 @@ public class TempBanCommand implements CommandExecutor {
                         if (time != 0) {
                             time += System.currentTimeMillis();
                         } else {
-                            TextUtil.sendCommandFormatError(sender, "/tempban <player> <time> [<reason>]");
+                            TextUtil.sendCommandFormatError(sender, "/" + alias + " <player> <time> [<reason>]");
                             return true;
                         }
 
@@ -87,7 +87,7 @@ public class TempBanCommand implements CommandExecutor {
                         return true;
                     }
                 } else {
-                    TextUtil.sendCommandFormatError(sender, "/tempban <player> <time> [<reason>]");
+                    TextUtil.sendCommandFormatError(sender, "/" + alias + " <player> <time> [<reason>]");
                 }
             }
         }

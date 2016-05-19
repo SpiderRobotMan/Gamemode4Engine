@@ -44,7 +44,7 @@ public class KickCommand implements CommandExecutor {
                         return true;
                     }
                 } else {
-                    TextUtil.sendCommandFormatError(sender, "/kick <player> [<reason>]");
+                    TextUtil.sendCommandFormatError(sender, "/" + alias + " <player> [<reason>]");
                 }
             }
         }

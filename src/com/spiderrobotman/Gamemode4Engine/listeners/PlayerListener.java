@@ -1,5 +1,6 @@
 package com.spiderrobotman.Gamemode4Engine.listeners;
 
+import com.spiderrobotman.Gamemode4Engine.command.BackCommand;
 import com.spiderrobotman.Gamemode4Engine.command.NickCommand;
 import com.spiderrobotman.Gamemode4Engine.handler.SpecialPlayerInventory;
 import com.spiderrobotman.Gamemode4Engine.main.Gamemode4Engine;
@@ -9,11 +10,9 @@ import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -51,7 +50,8 @@ public class PlayerListener implements Listener {
     public void onPlayerJoin(PlayerJoinEvent e) {
         NickCommand.updatePlayerName(e.getPlayer());
 
-        e.setJoinMessage(ChatColor.YELLOW + ChatColor.stripColor(NickCommand.getNickName(e.getPlayer())) + " joined the game");
+        String nickname = NickCommand.getNickName(e.getPlayer());
+        e.setJoinMessage(ChatColor.YELLOW + ChatColor.stripColor(nickname) + " joined the game");
 
         final Player player = e.getPlayer();
         new BukkitRunnable() {
@@ -80,6 +80,10 @@ public class PlayerListener implements Listener {
                 Gamemode4Engine.plugin().removeLoadedInventory(event.getPlayer());
             }
         }
+        Gamemode4Engine.plugin().getServer().getScheduler().runTaskAsynchronously(Gamemode4Engine.plugin(), () -> Gamemode4Engine.db.updatePlayer(event.getPlayer().getUniqueId(), event.getPlayer().getName(), event.getPlayer().getAddress().getHostString()));
+
+        NickCommand.nicks.remove(event.getPlayer().getUniqueId());
+
     }
 
     @EventHandler
@@ -90,6 +94,16 @@ public class PlayerListener implements Listener {
         if (!Gamemode4Engine.plugin().getInventoryAccess().check(inventory, player)) {
             event.setCancelled(true);
         }
+    }
+
+    @EventHandler
+    public void onPlayerTeleport(PlayerTeleportEvent e) {
+        BackCommand.updateLocation(e.getPlayer(), e.getFrom());
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent e) {
+        BackCommand.updateLocation(e.getEntity().getPlayer(), e.getEntity().getLocation());
     }
 
 }

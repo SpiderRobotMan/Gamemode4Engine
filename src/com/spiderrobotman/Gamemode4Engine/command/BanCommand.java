@@ -57,7 +57,7 @@ public class BanCommand implements CommandExecutor {
                         return true;
                     }
                 } else {
-                    TextUtil.sendCommandFormatError(sender, "/ban <player> [<reason>]");
+                    TextUtil.sendCommandFormatError(sender, "/" + alias + " <player> [<reason>]");
                 }
             }
         }

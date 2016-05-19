@@ -58,7 +58,7 @@ public class TPCommand implements CommandExecutor {
                         }
                     }
                 } else {
-                    TextUtil.sendCommandFormatError(sender, "/tp <player> [<player>]");
+                    TextUtil.sendCommandFormatError(sender, "/" + alias + " <player> [<player>]");
                 }
             }
         }

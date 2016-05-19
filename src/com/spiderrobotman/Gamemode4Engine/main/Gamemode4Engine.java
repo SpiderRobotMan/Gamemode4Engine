@@ -66,6 +66,9 @@ public class Gamemode4Engine extends JavaPlugin {
         getCommand("nick").setExecutor(new NickCommand());
         getCommand("openinv").setExecutor(new OpenInvCommand());
         getCommand("openend").setExecutor(new OpenEndCommand());
+        getCommand("back").setExecutor(new BackCommand());
+        getCommand("realname").setExecutor(new RealNameCommand());
+        getCommand("realname").setTabCompleter(new RealNameTabCompleter());
 
         this.getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
             try {
