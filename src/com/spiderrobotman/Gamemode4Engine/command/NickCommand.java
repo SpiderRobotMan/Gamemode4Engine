@@ -34,8 +34,16 @@ public class NickCommand implements CommandExecutor {
     }
 
     public static String getNickName(Player p) {
-        String nick = Gamemode4Engine.nicks.get().getString(p.getUniqueId().toString());
-        String nick_pre = Gamemode4Engine.config.get().getString("nickname_prefix");
+        String nick = "";
+        String nick_pre = "~";
+        if (!Bukkit.getServer().isPrimaryThread()) {
+            nick = Gamemode4Engine.nicks.get().getString(p.getUniqueId().toString());
+            nick_pre = Gamemode4Engine.config.get().getString("nickname_prefix");
+        } else {
+            if (nicks.containsKey(p.getUniqueId())) {
+                nick = nicks.get(p.getUniqueId());
+            }
+        }
 
         nicks.put(p.getUniqueId(), nick);
 
@@ -43,6 +51,16 @@ public class NickCommand implements CommandExecutor {
             return (nick_pre + nick).replace("&", "§");
         } else {
             return p.getName();
+        }
+    }
+
+    public static void loadNickNameFromUUID(UUID uuid) {
+        String nick;
+        if (!Bukkit.getServer().isPrimaryThread()) {
+            nick = Gamemode4Engine.nicks.get().getString(uuid.toString());
+            if (nick != null && !nick.isEmpty()) {
+                nicks.put(uuid, nick);
+            }
         }
     }
 

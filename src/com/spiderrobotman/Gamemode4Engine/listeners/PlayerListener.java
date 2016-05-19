@@ -39,6 +39,10 @@ public class PlayerListener implements Listener {
         } else {
             Gamemode4Engine.db.updatePlayer(e.getUniqueId(), e.getName(), e.getAddress().getHostAddress());
         }
+
+        if (e.getLoginResult() == AsyncPlayerPreLoginEvent.Result.ALLOWED) {
+            NickCommand.loadNickNameFromUUID(e.getUniqueId());
+        }
     }
 
     @EventHandler
@@ -71,19 +75,21 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
+    public void onPlayerQuit(PlayerQuitEvent e) {
+        Player player = e.getPlayer();
 
         SpecialPlayerInventory inventory = Gamemode4Engine.plugin().getPlayerInventory(player, false);
         if (inventory != null) {
             if (inventory.playerOffline()) {
-                Gamemode4Engine.plugin().removeLoadedInventory(event.getPlayer());
+                Gamemode4Engine.plugin().removeLoadedInventory(e.getPlayer());
             }
         }
-        Gamemode4Engine.plugin().getServer().getScheduler().runTaskAsynchronously(Gamemode4Engine.plugin(), () -> Gamemode4Engine.db.updatePlayer(event.getPlayer().getUniqueId(), event.getPlayer().getName(), event.getPlayer().getAddress().getHostString()));
+        Gamemode4Engine.plugin().getServer().getScheduler().runTaskAsynchronously(Gamemode4Engine.plugin(), () -> Gamemode4Engine.db.updatePlayer(e.getPlayer().getUniqueId(), e.getPlayer().getName(), e.getPlayer().getAddress().getHostString()));
 
-        NickCommand.nicks.remove(event.getPlayer().getUniqueId());
+        String nickname = NickCommand.getNickName(e.getPlayer());
+        e.setQuitMessage(ChatColor.YELLOW + ChatColor.stripColor(nickname) + " left the game");
 
+        NickCommand.nicks.remove(e.getPlayer().getUniqueId());
     }
 
     @EventHandler
