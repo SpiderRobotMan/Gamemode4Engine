@@ -33,7 +33,7 @@ public class NickCommand implements CommandExecutor {
         return fin.replace("&", "§") + ChatColor.RESET;
     }
 
-    public static String getNickName(Player p) {
+    private static String getNickName(Player p) {
         String nick = "";
         String nick_pre = "~";
         if (!Bukkit.getServer().isPrimaryThread()) {
@@ -45,9 +45,8 @@ public class NickCommand implements CommandExecutor {
             }
         }
 
-        nicks.put(p.getUniqueId(), nick);
-
         if (nick != null && !nick.isEmpty() && !nick.equalsIgnoreCase(p.getName())) {
+            nicks.put(p.getUniqueId(), nick);
             return (nick_pre + nick).replace("&", "§");
         } else {
             return p.getName();
@@ -55,9 +54,8 @@ public class NickCommand implements CommandExecutor {
     }
 
     public static void loadNickNameFromUUID(UUID uuid) {
-        String nick;
         if (!Bukkit.getServer().isPrimaryThread()) {
-            nick = Gamemode4Engine.nicks.get().getString(uuid.toString());
+            String nick = Gamemode4Engine.nicks.get().getString(uuid.toString());
             if (nick != null && !nick.isEmpty()) {
                 nicks.put(uuid, nick);
             }
@@ -86,7 +84,7 @@ public class NickCommand implements CommandExecutor {
         return prefix.replace("&", "§");
     }
 
-    private static List<String> getPossiblePlayerNames() {
+    private static List<String> getPossiblePlayerNames(Player exclude) {
         List<String> names = new ArrayList<>();
         for (org.bukkit.World world : Bukkit.getServer().getWorlds()) {
             String worldname = world.getName();
@@ -95,13 +93,15 @@ public class NickCommand implements CommandExecutor {
             String[] arr = playersFolder.list((f, s) -> s.endsWith(".dat"));
             for (String a : arr) {
                 UUID uuid = UUID.fromString(a.replaceAll(".dat$", ""));
-                OfflinePlayer p = Bukkit.getOfflinePlayer(uuid);
-                if (p != null) {
-                    names.add(p.getName());
-                    String nick1 = nicks.get(p.getUniqueId());
-                    if (nick1 != null) {
-                        String nick = ChatColor.stripColor(nick1.replace("&", "§"));
-                        if (!nick.isEmpty()) names.add(nick);
+                if (!uuid.equals(exclude.getUniqueId())) {
+                    OfflinePlayer p = Bukkit.getOfflinePlayer(uuid);
+                    if (p != null) {
+                        names.add(p.getName());
+                        String nick1 = nicks.get(p.getUniqueId());
+                        if (nick1 != null) {
+                            String nick = ChatColor.stripColor(nick1.replace("&", "§"));
+                            if (!nick.isEmpty()) names.add(nick);
+                        }
                     }
                 }
             }
@@ -110,9 +110,10 @@ public class NickCommand implements CommandExecutor {
         return names;
     }
 
-    private static boolean nameMatch(String name) {
+    private static boolean nameMatch(String name, Player exclude) {
+        name = ChatColor.stripColor(name.replace("&", "§"));
         int length = name.length();
-        for (String pn : getPossiblePlayerNames()) {
+        for (String pn : getPossiblePlayerNames(exclude)) {
             if (name.toLowerCase().contains(pn.toLowerCase())) {
                 int diff = length - pn.length();
                 if (!(diff >= 5) || !(diff <= -5)) {
@@ -134,9 +135,18 @@ public class NickCommand implements CommandExecutor {
                 }
                 Gamemode4Engine.plugin().getServer().getScheduler().runTaskAsynchronously(Gamemode4Engine.plugin(), () -> {
                     boolean cont = true;
+                    Player target = null;
+
                     if (args.length >= 1) {
                         int color_count = (args[0].length() - args[0].replace("&", "").length()) * 2;
                         int length = args[0].length() - color_count;
+                        boolean match = false;
+
+                        if (args.length == 1 && nameMatch(args[0], sender)) match = true;
+                        if (args.length == 2) {
+                            target = Bukkit.getPlayerExact(args[1]);
+                            if (target != null && nameMatch(args[0], target)) match = true;
+                        }
 
                         if (length > 15) {
                             sender.sendMessage(ChatColor.RED + "A nickname can only be 15 visible characters long! Yours is " + length + ".");
@@ -144,7 +154,7 @@ public class NickCommand implements CommandExecutor {
                         } else if (length < 3) {
                             sender.sendMessage(ChatColor.RED + "A nickname must have atleast 3 visible characters! Yours has " + length + ".");
                             cont = false;
-                        } else if (nameMatch(args[0])) {
+                        } else if (!args[0].equalsIgnoreCase("-reset") && match) {
                             sender.sendMessage(ChatColor.RED + "This nickname is too similar to another player!");
                             cont = false;
                         }
@@ -157,7 +167,6 @@ public class NickCommand implements CommandExecutor {
                             if (args[1].equalsIgnoreCase(sender.getName())) {
                                 setNickName(sender, args[0]);
                             } else if (sender.hasPermission("gm4.nickname.others")) {
-                                Player target = Bukkit.getPlayerExact(args[1]);
                                 if (target != null) {
                                     setNickName(target, args[0]);
                                     if (target.hasPermission("gm4.rank.patreon") && !target.hasPermission("gm4.rank.cmod") && !target.hasPermission("gm4.rank.mod") && !target.hasPermission("gm4.rank.admin")) {

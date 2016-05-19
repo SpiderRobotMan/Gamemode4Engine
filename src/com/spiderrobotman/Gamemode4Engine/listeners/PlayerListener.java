@@ -53,9 +53,7 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
         NickCommand.updatePlayerName(e.getPlayer());
-
-        String nickname = NickCommand.getNickName(e.getPlayer());
-        e.setJoinMessage(ChatColor.YELLOW + ChatColor.stripColor(nickname) + " joined the game");
+        e.setJoinMessage(ChatColor.YELLOW + e.getPlayer().getDisplayName() + ChatColor.YELLOW + " joined the game");
 
         final Player player = e.getPlayer();
         new BukkitRunnable() {
@@ -86,8 +84,7 @@ public class PlayerListener implements Listener {
         }
         Gamemode4Engine.plugin().getServer().getScheduler().runTaskAsynchronously(Gamemode4Engine.plugin(), () -> Gamemode4Engine.db.updatePlayer(e.getPlayer().getUniqueId(), e.getPlayer().getName(), e.getPlayer().getAddress().getHostString()));
 
-        String nickname = NickCommand.getNickName(e.getPlayer());
-        e.setQuitMessage(ChatColor.YELLOW + ChatColor.stripColor(nickname) + " left the game");
+        e.setQuitMessage(ChatColor.YELLOW + e.getPlayer().getDisplayName() + ChatColor.YELLOW + " left the game");
 
         NickCommand.nicks.remove(e.getPlayer().getUniqueId());
     }
