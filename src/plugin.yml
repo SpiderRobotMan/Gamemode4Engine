@@ -54,6 +54,14 @@ commands:
    description: Warp to a location.
    permission: gm4.warp
    usage: /warp  <name [set, list]>
+ msg:
+   description: Send private message to another player.
+   aliases: [tell, message, r, reply]
+   usage: /msg [<player>] <message>
+ socialspy:
+   description: Read other players messages.
+   aliases: [ss, messagespy, msgspy]
+   usage: /socialspy
 
 permissions:
  gm4.ban:
@@ -134,3 +142,6 @@ permissions:
    default: op
    children:
      gm4.warp: true
+ gm4.socialspy:
+   description: Allows you to see other players messages.
+   default: op

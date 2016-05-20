@@ -74,6 +74,8 @@ public class Gamemode4Engine extends JavaPlugin {
         getCommand("realname").setTabCompleter(new RealNameTabCompleter());
         getCommand("warp").setExecutor(new WarpCommand());
         getCommand("warp").setTabCompleter(new WarpTabCompleter());
+        getCommand("msg").setExecutor(new MsgCommand());
+        getCommand("socialspy").setExecutor(new SocialSpyCommand());
 
         this.getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
             try {

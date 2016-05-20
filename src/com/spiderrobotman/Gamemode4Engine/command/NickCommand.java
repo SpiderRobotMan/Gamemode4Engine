@@ -138,9 +138,12 @@ public class NickCommand implements CommandExecutor {
                     Player target = null;
 
                     if (args.length >= 1) {
-                        int color_count = (args[0].length() - args[0].replace("&", "").length()) * 2;
+                        String test = ChatColor.stripColor(args[0].toLowerCase().replace("&", "§")).replace("§", "");
+
+                        int color_count = args[0].length() - test.length();
                         int length = args[0].length() - color_count;
                         boolean match = false;
+                        if (length < 0) length = 0;
 
                         if (args.length == 1 && nameMatch(args[0], sender)) match = true;
                         if (args.length == 2) {
@@ -148,7 +151,10 @@ public class NickCommand implements CommandExecutor {
                             if (target != null && nameMatch(args[0], target)) match = true;
                         }
 
-                        if (length > 15) {
+                        if (!args[0].matches("\\A\\p{ASCII}*\\z")) {
+                            sender.sendMessage(ChatColor.RED + "A nickname can only contain ASCII characters!");
+                            cont = false;
+                        } else if (length > 15) {
                             sender.sendMessage(ChatColor.RED + "A nickname can only be 15 visible characters long! Yours is " + length + ".");
                             cont = false;
                         } else if (length < 3) {
@@ -170,7 +176,7 @@ public class NickCommand implements CommandExecutor {
                                 if (target != null) {
                                     setNickName(target, args[0]);
                                     if (target.hasPermission("gm4.rank.patreon") && !target.hasPermission("gm4.rank.cmod") && !target.hasPermission("gm4.rank.mod") && !target.hasPermission("gm4.rank.admin")) {
-                                        sender.sendMessage(ChatColor.GREEN + "Their nickname has been set to: " + ChatColor.RESET + ChatColor.stripColor(args[0].replace("&", "§")));
+                                        sender.sendMessage(ChatColor.GREEN + "Their nickname has been set to: " + ChatColor.RESET + ChatColor.stripColor(args[0].replace("&", "§")).replace("§", ""));
                                     } else {
                                         sender.sendMessage(ChatColor.GREEN + "Their nickname has been set to: " + ChatColor.RESET + args[0].replace("&", "§"));
                                     }
@@ -192,7 +198,7 @@ public class NickCommand implements CommandExecutor {
         if (!nickname.equalsIgnoreCase("-reset")) {
             String nick = nickname.replace("&", "§");
             if (p.hasPermission("gm4.rank.patreon") && !p.hasPermission("gm4.rank.cmod") && !p.hasPermission("gm4.rank.mod") && !p.hasPermission("gm4.rank.admin")) {
-                nick = ChatColor.stripColor(nick);
+                nick = ChatColor.stripColor(nick).replace("§", "");
             }
             nick = nick.replace("§", "&");
             Gamemode4Engine.nicks.get().set(p.getUniqueId().toString(), nick);

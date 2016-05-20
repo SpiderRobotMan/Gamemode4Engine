@@ -1,10 +1,12 @@
 package com.spiderrobotman.Gamemode4Engine.listeners;
 
 import com.spiderrobotman.Gamemode4Engine.command.BackCommand;
+import com.spiderrobotman.Gamemode4Engine.command.MsgCommand;
 import com.spiderrobotman.Gamemode4Engine.command.NickCommand;
 import com.spiderrobotman.Gamemode4Engine.handler.SpecialPlayerInventory;
 import com.spiderrobotman.Gamemode4Engine.main.Gamemode4Engine;
 import com.spiderrobotman.Gamemode4Engine.util.TextUtil;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
@@ -38,10 +40,28 @@ public class PlayerListener implements Listener {
             e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST, TextUtil.buildAccessMessage(e.getName()));
         } else {
             Gamemode4Engine.db.updatePlayer(e.getUniqueId(), e.getName(), e.getAddress().getHostAddress());
+
+            if ((boolean) pmap.get("patreon")) {
+                final String uuid = e.getUniqueId().toString();
+                Gamemode4Engine.plugin().getServer().getScheduler().runTask(Gamemode4Engine.plugin(), () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "pex user " + uuid + " add gm4.rank.patreon"));
+            }
+
         }
 
         if (e.getLoginResult() == AsyncPlayerPreLoginEvent.Result.ALLOWED) {
             NickCommand.loadNickNameFromUUID(e.getUniqueId());
+        }
+    }
+
+    @EventHandler
+    public void onPlayerLogin(PlayerLoginEvent e) {
+        if (e.getResult() == PlayerLoginEvent.Result.KICK_FULL) {
+            Player p = e.getPlayer();
+            if (p.hasPermission("gm4.rank.patreon") || p.hasPermission("gm4.rank.cmod") || p.hasPermission("gm4.rank.mod") || p.hasPermission("gm4.rank.admin")) {
+                e.allow();
+            } else {
+                e.disallow(PlayerLoginEvent.Result.KICK_FULL, ChatColor.GOLD + "Sorry " + p.getName() + "\n\n" + ChatColor.RED + "The server is full!");
+            }
         }
     }
 
@@ -87,6 +107,7 @@ public class PlayerListener implements Listener {
         e.setQuitMessage(ChatColor.YELLOW + e.getPlayer().getDisplayName() + ChatColor.YELLOW + " left the game");
 
         NickCommand.nicks.remove(e.getPlayer().getUniqueId());
+        MsgCommand.history.remove(e.getPlayer().getUniqueId());
     }
 
     @EventHandler
