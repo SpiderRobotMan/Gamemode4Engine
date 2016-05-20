@@ -8,6 +8,7 @@ import com.spiderrobotman.Gamemode4Engine.handler.PlayerData;
 import com.spiderrobotman.Gamemode4Engine.handler.SpecialEnderChest;
 import com.spiderrobotman.Gamemode4Engine.handler.SpecialPlayerInventory;
 import com.spiderrobotman.Gamemode4Engine.listeners.PlayerListener;
+import com.spiderrobotman.Gamemode4Engine.util.TPS;
 import com.spiderrobotman.Gamemode4Engine.util.TextUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -60,6 +61,7 @@ public class Gamemode4Engine extends JavaPlugin {
         inventoryAccess = new InventoryAccess();
 
         WarpCommand.updateWarpMemory();
+        RestrictCommand.restrictTo = config.get().getString("restrict");
 
         getCommand("ban").setExecutor(new BanCommand());
         getCommand("tempban").setExecutor(new TempBanCommand());
@@ -76,6 +78,10 @@ public class Gamemode4Engine extends JavaPlugin {
         getCommand("warp").setTabCompleter(new WarpTabCompleter());
         getCommand("msg").setExecutor(new MsgCommand());
         getCommand("socialspy").setExecutor(new SocialSpyCommand());
+        getCommand("restrict").setExecutor(new RestrictCommand());
+        getCommand("ping").setExecutor(new PingCommand());
+
+        Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new TPS(), 100L, 1L);
 
         this.getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
             try {

@@ -128,7 +128,7 @@ public class NickCommand implements CommandExecutor {
     public boolean onCommand(CommandSender cs, Command command, String alias, String[] args) {
         if (cs instanceof Player) {
             Player sender = (Player) cs;
-            if (sender.isOp() || sender.hasPermission("gm4.nickname") || sender.hasPermission("gm4.rank.patreon")) {
+            if (sender.isOp() || sender.hasPermission("gm4.nickname")) {
                 if (args.length <= 0) {
                     TextUtil.sendCommandFormatError(sender, "/" + alias + " <nick [-reset]> [<player>]");
                     return true;
@@ -175,7 +175,7 @@ public class NickCommand implements CommandExecutor {
                             } else if (sender.hasPermission("gm4.nickname.others")) {
                                 if (target != null) {
                                     setNickName(target, args[0]);
-                                    if (target.hasPermission("gm4.rank.patreon") && !target.hasPermission("gm4.rank.cmod") && !target.hasPermission("gm4.rank.mod") && !target.hasPermission("gm4.rank.admin")) {
+                                    if (!target.hasPermission("gm4.nickname.color")) {
                                         sender.sendMessage(ChatColor.GREEN + "Their nickname has been set to: " + ChatColor.RESET + ChatColor.stripColor(args[0].replace("&", "§")).replace("§", ""));
                                     } else {
                                         sender.sendMessage(ChatColor.GREEN + "Their nickname has been set to: " + ChatColor.RESET + args[0].replace("&", "§"));
@@ -197,7 +197,7 @@ public class NickCommand implements CommandExecutor {
     private void setNickName(Player p, String nickname) {
         if (!nickname.equalsIgnoreCase("-reset")) {
             String nick = nickname.replace("&", "§");
-            if (p.hasPermission("gm4.rank.patreon") && !p.hasPermission("gm4.rank.cmod") && !p.hasPermission("gm4.rank.mod") && !p.hasPermission("gm4.rank.admin")) {
+            if (!p.hasPermission("gm4.nickname.color")) {
                 nick = ChatColor.stripColor(nick).replace("§", "");
             }
             nick = nick.replace("§", "&");

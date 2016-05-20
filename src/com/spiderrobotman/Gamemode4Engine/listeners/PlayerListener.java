@@ -3,6 +3,7 @@ package com.spiderrobotman.Gamemode4Engine.listeners;
 import com.spiderrobotman.Gamemode4Engine.command.BackCommand;
 import com.spiderrobotman.Gamemode4Engine.command.MsgCommand;
 import com.spiderrobotman.Gamemode4Engine.command.NickCommand;
+import com.spiderrobotman.Gamemode4Engine.command.RestrictCommand;
 import com.spiderrobotman.Gamemode4Engine.handler.SpecialPlayerInventory;
 import com.spiderrobotman.Gamemode4Engine.main.Gamemode4Engine;
 import com.spiderrobotman.Gamemode4Engine.util.TextUtil;
@@ -41,9 +42,17 @@ public class PlayerListener implements Listener {
         } else {
             Gamemode4Engine.db.updatePlayer(e.getUniqueId(), e.getName(), e.getAddress().getHostAddress());
 
+            final String uuid = e.getUniqueId().toString();
             if ((boolean) pmap.get("patreon")) {
-                final String uuid = e.getUniqueId().toString();
-                Gamemode4Engine.plugin().getServer().getScheduler().runTask(Gamemode4Engine.plugin(), () -> Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "pex user " + uuid + " add gm4.rank.patreon"));
+                Gamemode4Engine.plugin().getServer().getScheduler().runTask(Gamemode4Engine.plugin(), () -> {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "pex user " + uuid + " add gm4.rank.patreon");
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "pex user " + uuid + " add gm4.nickname");
+                });
+            } else {
+                Gamemode4Engine.plugin().getServer().getScheduler().runTask(Gamemode4Engine.plugin(), () -> {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "pex user " + uuid + " remove gm4.rank.patreon");
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "pex user " + uuid + " remove gm4.nickname");
+                });
             }
 
         }
@@ -55,6 +64,9 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerLogin(PlayerLoginEvent e) {
+        if (!RestrictCommand.canBypassRestrict(e.getPlayer())) {
+            e.disallow(PlayerLoginEvent.Result.KICK_OTHER, ChatColor.GOLD + "Sorry " + e.getPlayer().getName() + "\n\n" + ChatColor.RED + "Server access is restricted!");
+        }
         if (e.getResult() == PlayerLoginEvent.Result.KICK_FULL) {
             Player p = e.getPlayer();
             if (p.hasPermission("gm4.rank.patreon") || p.hasPermission("gm4.rank.cmod") || p.hasPermission("gm4.rank.mod") || p.hasPermission("gm4.rank.admin")) {

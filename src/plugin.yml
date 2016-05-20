@@ -31,6 +31,7 @@ commands:
  nick:
    description: Give players a nickname.
    aliases: [nickname]
+   permission: gm4.nickname
    usage: /nick <nick> [<player>]
  openinv:
    description: Open a players inventory.
@@ -61,7 +62,17 @@ commands:
  socialspy:
    description: Read other players messages.
    aliases: [ss, messagespy, msgspy]
+   permission: gm4.socialspy
    usage: /socialspy
+ restrict:
+   description: Ristrict server access to certain ranks.
+   aliases: [restrictaccess]
+   permission: gm4.restrict
+   usage: /restrict <ranks [-reset]>
+ ping:
+   description: Get your current ping.
+   aliases: [pingme]
+   usage: /ping
 
 permissions:
  gm4.ban:
@@ -101,9 +112,14 @@ permissions:
      gm4.teleport: true
  gm4.nickname:
    description: Allows you to nickname yourself.
-   default: op
+   default: true
  gm4.nickname.others:
    description: Allows you to nickname others.
+   default: op
+   children:
+     gm4.nickname: true
+ gm4.nickname.color:
+   description: Allows you to use nickname colors.
    default: op
    children:
      gm4.nickname: true
@@ -145,3 +161,9 @@ permissions:
  gm4.socialspy:
    description: Allows you to see other players messages.
    default: op
+ gm4.restrict:
+   description: Allows you to restrict server access.
+   default: op
+ gm4.restrict.bypass:
+   description: Allows you to bypass server restriction.
+   default: false
