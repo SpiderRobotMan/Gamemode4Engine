@@ -111,7 +111,7 @@ public class NickCommand implements CommandExecutor {
     }
 
     private static boolean nameMatch(String name, Player exclude) {
-        name = ChatColor.stripColor(name.replace("&", "§"));
+        name = ChatColor.stripColor(name.replace("&", "§")).replace("§", "");
         int length = name.length();
         for (String pn : getPossiblePlayerNames(exclude)) {
             if (name.toLowerCase().contains(pn.toLowerCase())) {

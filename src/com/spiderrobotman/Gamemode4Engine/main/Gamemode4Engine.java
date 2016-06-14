@@ -11,7 +11,6 @@ import com.spiderrobotman.Gamemode4Engine.listeners.PlayerListener;
 import com.spiderrobotman.Gamemode4Engine.util.TPS;
 import com.spiderrobotman.Gamemode4Engine.util.TextUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
@@ -21,7 +20,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Level;
 
 /**
  * Project: Gamemode4Engine
@@ -37,6 +35,7 @@ public class Gamemode4Engine extends JavaPlugin {
     public static ConfigManager.Config config;
     public static ConfigManager.Config nicks;
     public static ConfigManager.Config warps;
+    public static ConfigManager.Config protect;
     private static Gamemode4Engine plugin;
     private final Map<UUID, SpecialPlayerInventory> inventories = new HashMap<>();
     private final Map<UUID, SpecialEnderChest> enderChests = new HashMap<>();
@@ -49,20 +48,27 @@ public class Gamemode4Engine extends JavaPlugin {
 
     public void onEnable() {
         plugin = this;
-        Bukkit.getLogger().log(Level.INFO, ChatColor.GREEN + "Gamemode4Engine initializing...");
+        TextUtil.logInfo("starting engine....");
+        TextUtil.logInfo("registering listeners...");
         registerEvents(plugin, new PlayerListener());
+
+        TextUtil.logInfo("defining configuration files...");
         ConfigManager c = new ConfigManager(this);
         config = c.getConfig("config.yml").copyDefaults(true).save();
         nicks = c.getConfig("nicks.yml").copyDefaults(true).save();
         warps = c.getConfig("warps.yml").copyDefaults(true).save();
+        protect = c.getConfig("protected.yml").copyDefaults(true).save();
+        TextUtil.logInfo("opening database connections...");
         db = new DatabaseManager(config.get().getString("main_database.host"), config.get().getString("main_database.port"), config.get().getString("main_database.user"), config.get().getString("main_database.password"), config.get().getString("main_database.database"));
         adb = new DatabaseManager(config.get().getString("access_database.host"), config.get().getString("access_database.port"), config.get().getString("access_database.user"), config.get().getString("access_database.password"), config.get().getString("access_database.database"));
+        TextUtil.logInfo("updating data...");
         playerLoader = new PlayerData();
         inventoryAccess = new InventoryAccess();
 
         WarpCommand.updateWarpMemory();
         RestrictCommand.restrictTo = config.get().getString("restrict");
 
+        TextUtil.logInfo("registering commands...");
         getCommand("ban").setExecutor(new BanCommand());
         getCommand("tempban").setExecutor(new TempBanCommand());
         getCommand("kick").setExecutor(new KickCommand());
@@ -80,9 +86,12 @@ public class Gamemode4Engine extends JavaPlugin {
         getCommand("socialspy").setExecutor(new SocialSpyCommand());
         getCommand("restrict").setExecutor(new RestrictCommand());
         getCommand("ping").setExecutor(new PingCommand());
+        getCommand("lag").setExecutor(new LagCommand());
 
+        TextUtil.logInfo("starting TPS monitor task...");
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new TPS(), 100L, 1L);
 
+        TextUtil.logInfo("starting MySQL keep alive task...");
         this.getServer().getScheduler().runTaskTimerAsynchronously(this, () -> {
             try {
                 Gamemode4Engine.db.openConnection().createStatement().executeQuery("SELECT 1;");
@@ -91,7 +100,21 @@ public class Gamemode4Engine extends JavaPlugin {
                 TextUtil.logWarning("MySQL failed to keep connection alive! ERROR: " + e.getMessage());
             }
         }, 200L, 200L);
-        Bukkit.getLogger().log(Level.INFO, ChatColor.GREEN + "Gamemode4Engine initialized!");
+        TextUtil.logInfo("initialization complete!");
+    }
+
+    public void onDisable() {
+        TextUtil.logWarning("closing database connections...");
+        db.closeConnection();
+        adb.closeConnection();
+
+        TextUtil.logWarning("saving configs...");
+        config.save();
+        nicks.save();
+        warps.save();
+        protect.save();
+
+
     }
 
     private void registerEvents(Plugin p, Listener... listeners) {

@@ -40,7 +40,7 @@ commands:
    usage: /openinv <player>
  openend:
    description: Open a players enderchest.
-   aliases: [endsee, enderchest, openenderchest, enderchestsee]
+   aliases: [endsee, enderchest, openenderchest, enderchestsee, endersee]
    permission: gm4.openinv
    usage: /openend <player>
  back:
@@ -73,6 +73,9 @@ commands:
    description: Get your current ping.
    aliases: [pingme]
    usage: /ping
+ lag:
+   description: Check lag causes.
+   usage: /lag
 
 permissions:
  gm4.ban:
@@ -166,4 +169,7 @@ permissions:
    default: op
  gm4.restrict.bypass:
    description: Allows you to bypass server restriction.
+   default: false
+ gm4.lag.plus:
+   description: Allows access to LagPlus
    default: false

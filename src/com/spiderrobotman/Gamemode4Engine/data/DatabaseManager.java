@@ -45,8 +45,18 @@ public class DatabaseManager {
         return this.connection;
     }
 
-    private boolean hasConnection() throws SQLException {
+    public boolean hasConnection() throws SQLException {
         return this.connection != null;
+    }
+
+    public void closeConnection() {
+        try {
+            if (hasConnection()) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            TextUtil.logError("MySQL failed to close connection! ERROR: " + e.getMessage());
+        }
     }
 
     public boolean updatePlayer(UUID uuid, String name, String ip) {

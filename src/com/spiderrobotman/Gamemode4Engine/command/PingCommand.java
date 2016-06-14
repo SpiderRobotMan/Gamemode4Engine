@@ -20,32 +20,7 @@ import java.util.regex.Pattern;
  */
 public class PingCommand implements CommandExecutor {
 
-    @Override
-    public boolean onCommand(CommandSender cs, Command command, String alias, String[] args) {
-        if (cs instanceof Player) {
-            Player sender = (Player) cs;
-            if (args.length == 0) {
-                int ping;
-                try {
-                    ping = getPlayerPing(sender) / 2;
-                } catch (Exception e) {
-                    sender.sendMessage(ChatColor.RED + "Sorry, your ping could not be gotten.");
-                    return true;
-                }
-                if (!(ping <= 0)) {
-                    sender.sendMessage(ChatColor.GREEN + "Your current ping is: " + ChatColor.GOLD + ping + "ms");
-                } else {
-                    sender.sendMessage(ChatColor.RED + "Sorry, your ping could not be gotten.");
-                }
-                return true;
-            } else {
-                TextUtil.sendCommandFormatError(sender, "/" + alias);
-            }
-        }
-        return true;
-    }
-
-    private int getPlayerPing(Player player) throws Exception {
+    static int getPlayerPing(Player player) throws Exception {
         int ping;
 
         Class<?> craftPlayer = Class.forName("org.bukkit.craftbukkit." + getServerVersion() + "entity.CraftPlayer");
@@ -58,9 +33,9 @@ public class PingCommand implements CommandExecutor {
         return ping;
     }
 
-    private String getServerVersion() {
+    private static String getServerVersion() {
 
-        Pattern brand = Pattern.compile("(v|)[0-9][_.][0-9][_.][R0-9]*");
+        Pattern brand = Pattern.compile("(v|)[0-9][_.][0-9][0-9]?[_.][R0-9]*");
         String version;
 
         String pkg = Bukkit.getServer().getClass().getPackage().getName();
@@ -73,5 +48,30 @@ public class PingCommand implements CommandExecutor {
         version = version0;
 
         return !"".equals(version) ? version + "." : "";
+    }
+
+    @Override
+    public boolean onCommand(CommandSender cs, Command command, String alias, String[] args) {
+        if (cs instanceof Player) {
+            Player sender = (Player) cs;
+            if (args.length == 0) {
+                int ping;
+                try {
+                    ping = getPlayerPing(sender);
+                } catch (Exception e) {
+                    sender.sendMessage(ChatColor.RED + "Sorry, your ping could not be gotten.");
+                    return true;
+                }
+                if (!(ping <= 0)) {
+                    sender.sendMessage(ChatColor.GREEN + "Your current round-trip ping is: " + ChatColor.GOLD + ping + "ms");
+                } else {
+                    sender.sendMessage(ChatColor.RED + "Sorry, your ping could not be gotten.");
+                }
+                return true;
+            } else {
+                TextUtil.sendCommandFormatError(sender, "/" + alias);
+            }
+        }
+        return true;
     }
 }

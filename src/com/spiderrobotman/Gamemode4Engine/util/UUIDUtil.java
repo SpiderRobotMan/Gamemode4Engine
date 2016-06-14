@@ -1,15 +1,11 @@
 package com.spiderrobotman.Gamemode4Engine.util;
 
-import com.nametagedit.plugin.utils.UUIDFetcher;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Project: Gamemode4Engine
@@ -19,6 +15,7 @@ import java.util.UUID;
  */
 
 public class UUIDUtil {
+
     private UUIDUtil() {
     }
 
@@ -58,7 +55,7 @@ public class UUIDUtil {
      * @param name the name of the player to get the UUID of
      * @return the player's UUID or null
      */
-    public static UUID getUUIDOf(String name) {
+    public static UUID getPlayerUUID(String name) {
         UUID uuid;
         Player player = getPlayer(name);
 
@@ -85,5 +82,18 @@ public class UUIDUtil {
         }
 
         return uuid;
+    }
+
+    public static Map<UUID, String> getPossibleUUIDs(String name) {
+        UUIDFetcher fetcher = new UUIDFetcher(Collections.singletonList(name));
+        Map<UUID, String> out = new HashMap<>();
+
+        try {
+            Map<String, UUID> response = fetcher.call();
+            response.entrySet().stream().filter(entry -> Bukkit.getOfflinePlayer(entry.getValue()).hasPlayedBefore()).forEach(entry -> out.put(entry.getValue(), entry.getKey()));
+            return out;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

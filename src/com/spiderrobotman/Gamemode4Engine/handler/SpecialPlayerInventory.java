@@ -1,12 +1,12 @@
 package com.spiderrobotman.Gamemode4Engine.handler;
 
-import net.minecraft.server.v1_9_R2.ContainerUtil;
-import net.minecraft.server.v1_9_R2.EntityHuman;
-import net.minecraft.server.v1_9_R2.ItemStack;
-import net.minecraft.server.v1_9_R2.PlayerInventory;
-import org.bukkit.craftbukkit.v1_9_R2.entity.CraftHumanEntity;
-import org.bukkit.craftbukkit.v1_9_R2.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_9_R2.inventory.CraftInventory;
+import net.minecraft.server.v1_10_R1.ContainerUtil;
+import net.minecraft.server.v1_10_R1.EntityHuman;
+import net.minecraft.server.v1_10_R1.ItemStack;
+import net.minecraft.server.v1_10_R1.PlayerInventory;
+import org.bukkit.craftbukkit.v1_10_R1.entity.CraftHumanEntity;
+import org.bukkit.craftbukkit.v1_10_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_10_R1.inventory.CraftInventory;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
@@ -18,6 +18,7 @@ import java.lang.reflect.Field;
  * Date: May 18 2016
  * Website: http://www.spiderrobotman.com
  */
+
 public class SpecialPlayerInventory extends PlayerInventory {
 
     private final CraftInventory inventory = new CraftInventory(this);
@@ -46,7 +47,7 @@ public class SpecialPlayerInventory extends PlayerInventory {
             Field extraSlotsField = clazz.getDeclaredField("extraSlots");
             extraSlotsField.setAccessible(true);
             extraSlotsField.set(dest, src.extraSlots);
-        } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException | SecurityException e) {
+        } catch (NoSuchFieldException | SecurityException | IllegalAccessException | IllegalArgumentException e) {
             e.printStackTrace();
         }
 
@@ -63,6 +64,7 @@ public class SpecialPlayerInventory extends PlayerInventory {
 
     private boolean inventoryRemovalCheck(boolean save) {
         boolean offline = transaction.isEmpty() && !playerOnline;
+
         if (offline && save) {
             owner.saveData();
         }

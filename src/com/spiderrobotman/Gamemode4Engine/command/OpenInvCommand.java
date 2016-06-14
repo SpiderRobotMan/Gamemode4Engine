@@ -2,7 +2,6 @@ package com.spiderrobotman.Gamemode4Engine.command;
 
 import com.spiderrobotman.Gamemode4Engine.handler.SpecialPlayerInventory;
 import com.spiderrobotman.Gamemode4Engine.main.Gamemode4Engine;
-import com.spiderrobotman.Gamemode4Engine.util.TextUtil;
 import com.spiderrobotman.Gamemode4Engine.util.UUIDUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -32,17 +31,18 @@ public class OpenInvCommand implements CommandExecutor {
             if (player.isOp() || player.hasPermission("gm4.openinv")) {
 
                 UUID history = openInvHistory.get(player.getUniqueId());
+                if (history == null) {
+                    history = player.getUniqueId();
+                    openInvHistory.put(player.getUniqueId(), history);
+                }
 
                 final UUID uuid;
 
+                // Read from history if target is not named
                 if (args.length < 1) {
-                    if (history == null) {
-                        TextUtil.sendCommandFormatError(player, "/" + alias + " <player>");
-                        return true;
-                    }
                     uuid = history;
                 } else {
-                    uuid = UUIDUtil.getUUIDOf(args[0]);
+                    uuid = UUIDUtil.getPlayerUUID(args[0]);
                     if (uuid == null) {
                         player.sendMessage(ChatColor.RED + "Player not found!");
                         return true;
@@ -53,15 +53,19 @@ public class OpenInvCommand implements CommandExecutor {
 
                 Player target = Bukkit.getPlayer(uuid);
                 if (target == null) {
+                    // Targeted player was not found online, start asynchronous lookup in files
                     Bukkit.getScheduler().runTaskAsynchronously(Gamemode4Engine.plugin(), () -> {
+                        // Try loading the player's data asynchronously
                         final Player target1 = Gamemode4Engine.plugin().getPlayerLoader().loadPlayer(uuid);
                         if (target1 == null) {
                             player.sendMessage(ChatColor.RED + "Player not found!");
                             return;
                         }
 
+                        // Open target's inventory synchronously
                         Bukkit.getScheduler().runTask(Gamemode4Engine.plugin(), () -> {
                             Player player1 = Bukkit.getPlayer(playerUUID);
+                            // If sender is no longer online after loading the target, abort!
                             if (player1 == null) {
                                 return;
                             }
@@ -84,7 +88,7 @@ public class OpenInvCommand implements CommandExecutor {
             return;
         }
 
-        if (!player.hasPermission("gm4.openinv.override") && target.hasPermission("gm4.openinv.bypass")) {
+        if (!player.hasPermission("gm4.openinv.override") && Gamemode4Engine.protect.get().getBoolean(target.getUniqueId().toString(), false)) {
             player.sendMessage(ChatColor.RED + target.getDisplayName() + "'s inventory is protected!");
             return;
         }

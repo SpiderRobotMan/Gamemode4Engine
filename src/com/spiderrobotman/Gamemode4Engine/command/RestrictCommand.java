@@ -44,16 +44,14 @@ public class RestrictCommand implements CommandExecutor {
             if (sender.isOp() || sender.hasPermission("gm4.restrict")) {
                 if (args.length == 1) {
                     if (args[0].equalsIgnoreCase("-reset")) {
-                        restrictTo = null;
+                        restrictTo = "-reset";
                         sender.sendMessage(ChatColor.GREEN + "Server restriction has been removed!");
+                        save(restrictTo);
                         return true;
                     }
                     restrictTo = args[0];
                     Bukkit.getOnlinePlayers().stream().filter(p -> !canBypassRestrict(p)).forEach(p -> p.kickPlayer(ChatColor.GOLD + "Sorry " + p.getName() + "\n\n" + ChatColor.RED + "Server access has been restricted!"));
-                    Gamemode4Engine.plugin().getServer().getScheduler().runTaskAsynchronously(Gamemode4Engine.plugin(), () -> {
-                        Gamemode4Engine.config.get().set("restrict", restrictTo);
-                        Gamemode4Engine.config.save();
-                    });
+                    save(restrictTo);
                     return true;
                 }
                 TextUtil.sendCommandFormatError(sender, "/" + alias + " <ranks [-reset]>");
@@ -61,5 +59,12 @@ public class RestrictCommand implements CommandExecutor {
         }
 
         return true;
+    }
+
+    private void save(String restrictTo) {
+        Gamemode4Engine.plugin().getServer().getScheduler().runTaskAsynchronously(Gamemode4Engine.plugin(), () -> {
+            Gamemode4Engine.config.get().set("restrict", restrictTo);
+            Gamemode4Engine.config.save();
+        });
     }
 }

@@ -1,8 +1,8 @@
 package com.spiderrobotman.Gamemode4Engine.handler;
 
 import com.spiderrobotman.Gamemode4Engine.util.TextUtil;
-import net.minecraft.server.v1_9_R2.IInventory;
-import org.bukkit.craftbukkit.v1_9_R2.inventory.CraftInventory;
+import net.minecraft.server.v1_10_R1.IInventory;
+import org.bukkit.craftbukkit.v1_10_R1.inventory.CraftInventory;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.Inventory;
 

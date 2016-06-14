@@ -31,7 +31,7 @@ class UUIDFetcher implements Callable<Map<String, UUID>> {
         this.rateLimiting = rateLimiting;
     }
 
-    private UUIDFetcher(List<String> names) {
+    UUIDFetcher(List<String> names) {
         this(names, true);
     }
 

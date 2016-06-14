@@ -19,6 +19,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 
 /**
@@ -31,6 +32,17 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerPreLogin(AsyncPlayerPreLoginEvent e) {
+        try {
+            if (!Gamemode4Engine.adb.hasConnection() || !Gamemode4Engine.db.hasConnection()) {
+                e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.GOLD + "Sorry " + e.getName() + "\n" + ChatColor.RED + "It seems our database is offline!\n\n" + ChatColor.AQUA + "Try again in a few seconds.");
+                return;
+            }
+        } catch (SQLException e1) {
+            e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, ChatColor.GOLD + "Sorry " + e.getName() + "\n" + ChatColor.RED + "It seems our database is offline!\n\n" + ChatColor.AQUA + "Try again in a few seconds.");
+            TextUtil.logError("MySQL database connection could not be checked! ERROR: " + e1.getMessage());
+            return;
+        }
+
         HashMap<String, Object> bmap = Gamemode4Engine.db.fetchPlayerBans(e.getUniqueId());
 
         if (bmap != null) e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, TextUtil.buildBanMessage(bmap));
@@ -43,15 +55,18 @@ public class PlayerListener implements Listener {
             Gamemode4Engine.db.updatePlayer(e.getUniqueId(), e.getName(), e.getAddress().getHostAddress());
 
             final String uuid = e.getUniqueId().toString();
+            final String name = e.getName();
             if ((boolean) pmap.get("patreon")) {
                 Gamemode4Engine.plugin().getServer().getScheduler().runTask(Gamemode4Engine.plugin(), () -> {
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "pex user " + uuid + " add gm4.rank.patreon");
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "pex user " + uuid + " add gm4.nickname");
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "scoreboard players set " + name + " patrons 1");
                 });
             } else {
                 Gamemode4Engine.plugin().getServer().getScheduler().runTask(Gamemode4Engine.plugin(), () -> {
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "pex user " + uuid + " remove gm4.rank.patreon");
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "pex user " + uuid + " remove gm4.nickname");
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "scoreboard players reset " + name + " patrons");
                 });
             }
 
@@ -64,16 +79,23 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerLogin(PlayerLoginEvent e) {
+        Player p = e.getPlayer();
         if (!RestrictCommand.canBypassRestrict(e.getPlayer())) {
             e.disallow(PlayerLoginEvent.Result.KICK_OTHER, ChatColor.GOLD + "Sorry " + e.getPlayer().getName() + "\n\n" + ChatColor.RED + "Server access is restricted!");
         }
         if (e.getResult() == PlayerLoginEvent.Result.KICK_FULL) {
-            Player p = e.getPlayer();
             if (p.hasPermission("gm4.rank.patreon") || p.hasPermission("gm4.rank.cmod") || p.hasPermission("gm4.rank.mod") || p.hasPermission("gm4.rank.admin")) {
                 e.allow();
             } else {
                 e.disallow(PlayerLoginEvent.Result.KICK_FULL, ChatColor.GOLD + "Sorry " + p.getName() + "\n\n" + ChatColor.RED + "The server is full!");
             }
+        }
+        if (p.hasPermission("gm4.openinv.bypass")) {
+            final String uuid = p.getUniqueId().toString();
+            Gamemode4Engine.plugin().getServer().getScheduler().runTaskAsynchronously(Gamemode4Engine.plugin(), () -> {
+                Gamemode4Engine.protect.get().set(uuid, true);
+                Gamemode4Engine.protect.save();
+            });
         }
     }
 
@@ -84,10 +106,10 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
-        NickCommand.updatePlayerName(e.getPlayer());
+        final Player player = e.getPlayer();
+        NickCommand.updatePlayerName(player);
         e.setJoinMessage(ChatColor.YELLOW + e.getPlayer().getDisplayName() + ChatColor.YELLOW + " joined the game");
 
-        final Player player = e.getPlayer();
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -134,7 +156,9 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerTeleport(PlayerTeleportEvent e) {
-        BackCommand.updateLocation(e.getPlayer(), e.getFrom());
+        if (e.getCause() == PlayerTeleportEvent.TeleportCause.COMMAND || e.getCause() == PlayerTeleportEvent.TeleportCause.PLUGIN) {
+            BackCommand.updateLocation(e.getPlayer(), e.getFrom());
+        }
     }
 
     @EventHandler
