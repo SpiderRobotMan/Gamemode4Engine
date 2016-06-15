@@ -1,0 +1,175 @@
+name: Gamemode4Engine
+version: 1.0.0
+description: This plugin handles the Gamemode 4 server backend.
+author: SpiderRobotMan
+website: http://www.spiderrobotman.com
+
+main: com.spiderrobotman.Gamemode4Engine.main.Gamemode4Engine
+
+commands:
+ ban:
+   description: Permanently ban a player.
+   permission: gm4.ban
+   usage: /ban <player> [<reason>]
+ kick:
+   description: Kick a player.
+   permission: gm4.kick
+   usage: /kick <player> [<reason>]
+ tempban:
+   description: Temporarily ban a player.
+   permission: gm4.tempban
+   usage: /tempban <player> <time> [<reason>]
+ unban:
+   description: Unban a player.
+   permission: gm4.unban
+   usage: /unban <player>
+ tp:
+   description: Teleport.
+   aliases: [tpunsafe, teleport]
+   permission: gm4.teleport
+   usage: /tp <player> [<player>]
+ nick:
+   description: Give players a nickname.
+   aliases: [nickname]
+   permission: gm4.nickname
+   usage: /nick <nick> [<player>]
+ openinv:
+   description: Open a players inventory.
+   aliases: [invsee, openinventory, inventorysee]
+   permission: gm4.openinv
+   usage: /openinv <player>
+ openend:
+   description: Open a players enderchest.
+   aliases: [endsee, enderchest, openenderchest, enderchestsee, endersee]
+   permission: gm4.openinv
+   usage: /openend <player>
+ back:
+   description: Go back to previous location.
+   aliases: [backunsafe, goback, last, lastlocation]
+   permission: gm4.back
+   usage: /back
+ realname:
+   description: Show real name of user with nickname.
+   usage: /realname
+ warp:
+   description: Warp to a location.
+   permission: gm4.warp
+   usage: /warp  <name [set, list]>
+ msg:
+   description: Send private message to another player.
+   aliases: [tell, message, r, reply]
+   usage: /msg [<player>] <message>
+ socialspy:
+   description: Read other players messages.
+   aliases: [ss, messagespy, msgspy]
+   permission: gm4.socialspy
+   usage: /socialspy
+ restrict:
+   description: Ristrict server access to certain ranks.
+   aliases: [restrictaccess]
+   permission: gm4.restrict
+   usage: /restrict <ranks [-reset]>
+ ping:
+   description: Get your current ping.
+   aliases: [pingme]
+   usage: /ping
+ lag:
+   description: Check lag causes.
+   usage: /lag
+
+permissions:
+ gm4.ban:
+   description: Allows you to ban players.
+   default: op
+ gm4.kick:
+   description: Allows you to kick players.
+   default: op
+ gm4.kick.bypass:
+   description: Allows you to bypass kick commands.
+   default: op
+   children:
+     gm4.kick: true
+ gm4.ban.bypass:
+   description: Allows you to bypass ban commands.
+   default: op
+   children:
+     gm4.ban: true
+ gm4.tempban:
+   description: Allows you to tempban players.
+   default: op
+ gm4.tempban.bypass:
+   description: Allows you to bypass tempban commands.
+   default: op
+   children:
+     gm4.tempban: true
+ gm4.unban:
+   description: Allows you to unban players.
+   default: op
+ gm4.teleport:
+   description: Allows you to teleport.
+   default: op
+ gm4.teleport.others:
+   description: Allows you to teleport others.
+   default: op
+   children:
+     gm4.teleport: true
+ gm4.nickname:
+   description: Allows you to nickname yourself.
+   default: true
+ gm4.nickname.others:
+   description: Allows you to nickname others.
+   default: op
+   children:
+     gm4.nickname: true
+ gm4.nickname.color:
+   description: Allows you to use nickname colors.
+   default: op
+   children:
+     gm4.nickname: true
+ gm4.openinv:
+   description: Open a players inventory.
+   default: op
+ gm4.openinv.bypass:
+   description: Disallow allow openinv on this player.
+   default: op
+ gm4.openinv.override:
+   description: Bypass openinv bypass.
+   default: op
+ gm4.openinv.edit:
+   description: Allow editing of inventory.
+   default: op
+ gm4.rank.patreon:
+   description: Patreon rank.
+   default: false
+ gm4.rank.cmod:
+   description: CMOD rank.
+   default: false
+ gm4.rank.mod:
+   description: MOD rank.
+   default: false
+ gm4.rank.admin:
+   description: Admin rank.
+   default: op
+ gm4.back:
+   description: Allows you to return to previous location.
+   default: op
+ gm4.warp:
+   description: Allows you to warp.
+   default: op
+ gm4.warp.set:
+   description: Allows you to create warps.
+   default: op
+   children:
+     gm4.warp: true
+ gm4.socialspy:
+   description: Allows you to see other players messages.
+   default: op
+ gm4.restrict:
+   description: Allows you to restrict server access.
+   default: op
+ gm4.restrict.bypass:
+   description: Allows you to bypass server restriction.
+   default: false
+ gm4.lag.plus:
+   description: Allows access to LagPlus
+   default: false
