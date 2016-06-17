@@ -10,6 +10,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import java.util.Map;
 import java.util.UUID;
@@ -38,7 +39,7 @@ public class BackCommand implements CommandExecutor {
                     if (locationHistory.containsKey(sender.getUniqueId())) {
                         Location loc = locationHistory.get(sender.getUniqueId());
                         if (!isUnsafe(sender, loc) || alias.equalsIgnoreCase("backunsafe")) {
-                            sender.teleport(loc);
+                            sender.teleport(loc, PlayerTeleportEvent.TeleportCause.COMMAND);
                             sender.sendMessage(ChatColor.GREEN + "Returning you to your last known location! [" + ChatColor.GOLD + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ChatColor.GREEN + "]");
                         } else {
                             sender.sendMessage(ChatColor.RED + "Unsafe location! Use " + ChatColor.GOLD + "/backunsafe" + ChatColor.RED + " to bypass protection.");

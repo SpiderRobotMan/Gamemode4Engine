@@ -76,6 +76,9 @@ commands:
  lag:
    description: Check lag causes.
    usage: /lag
+ watch:
+   descrption: Watch another player
+   usage: /watch <player>
 
 permissions:
  gm4.ban:
@@ -172,4 +175,7 @@ permissions:
    default: false
  gm4.lag.plus:
    description: Allows access to LagPlus
+   default: false
+ gm4.watch:
+   description: Allows you to watch other players
    default: false

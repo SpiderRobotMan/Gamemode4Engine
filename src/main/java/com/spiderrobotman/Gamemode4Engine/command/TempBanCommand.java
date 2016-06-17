@@ -9,6 +9,7 @@ import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -64,13 +65,9 @@ public class TempBanCommand implements CommandExecutor {
                         return true;
                     }
 
-                    Player target = PlayerUtil.getPlayerFromString(args[0]);
+                    OfflinePlayer target = PlayerUtil.getPlayerFromString(args[0]);
                     if (target != null) {
-                        if (!target.hasPermission("gm4.tempban.bypass")) {
-                            banPlayer(target.getUniqueId(), sender.getDisplayName(), TextUtil.buildFromArray(1, args), time, target.isOnline());
-                        } else {
-                            sender.sendMessage(ChatColor.RED + "That player cannot be banned!");
-                        }
+                        banPlayer(target.getUniqueId(), sender.getDisplayName(), TextUtil.buildFromArray(1, args), time, target.isOnline());
 
                     } else {
                         sender.sendMessage(ChatColor.GOLD + "Offline player lookup...");

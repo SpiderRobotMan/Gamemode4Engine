@@ -9,6 +9,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -102,7 +103,7 @@ public class WarpCommand implements CommandExecutor {
                                 if (sender.isOnline()) {
                                     if (loc != null) {
                                         sender.sendMessage(ChatColor.GREEN + "Warping you to " + ChatColor.GOLD + args[0] + ChatColor.GREEN + " [" + ChatColor.GOLD + loc.getWorld().getName() + ", " + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ChatColor.GREEN + "]");
-                                        sender.teleport(loc);
+                                        sender.teleport(loc, PlayerTeleportEvent.TeleportCause.COMMAND);
                                     } else {
                                         sender.sendMessage(ChatColor.RED + "Warp " + ChatColor.GOLD + args[0] + ChatColor.RED + " does not exist!");
                                     }

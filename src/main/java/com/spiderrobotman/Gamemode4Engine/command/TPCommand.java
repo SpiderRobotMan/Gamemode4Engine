@@ -7,6 +7,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerTeleportEvent;
 
 /**
  * Project: Gamemode4Engine
@@ -30,7 +31,7 @@ public class TPCommand implements CommandExecutor {
                             return true;
                         }
                         if (!isUnsafe(sender, p) || alias.equalsIgnoreCase("tpunsafe")) {
-                            sender.teleport(p);
+                            sender.teleport(p, PlayerTeleportEvent.TeleportCause.COMMAND);
                         } else {
                             sender.sendMessage(ChatColor.RED + "Unsafe location! Use " + ChatColor.GOLD + "/tpunsafe" + ChatColor.RED + " to bypass protection.");
                         }
@@ -48,7 +49,7 @@ public class TPCommand implements CommandExecutor {
                             }
 
                             if (!isUnsafe(p1, p2) || alias.equalsIgnoreCase("tpunsafe")) {
-                                p1.teleport(p2);
+                                p1.teleport(p2, PlayerTeleportEvent.TeleportCause.COMMAND);
                             } else {
                                 sender.sendMessage(ChatColor.RED + "Unsafe location! Use " + ChatColor.GOLD + "/tpunsafe" + ChatColor.RED + " to bypass protection.");
                             }

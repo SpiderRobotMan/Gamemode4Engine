@@ -88,6 +88,7 @@ public class Gamemode4Engine extends JavaPlugin {
         getCommand("restrict").setExecutor(new RestrictCommand());
         getCommand("ping").setExecutor(new PingCommand());
         getCommand("lag").setExecutor(new LagCommand());
+        getCommand("watch").setExecutor(new WatchCommand());
 
         TextUtil.logInfo("starting TPS monitor task...");
         Bukkit.getServer().getScheduler().scheduleSyncRepeatingTask(this, new TPS(), 100L, 1L);

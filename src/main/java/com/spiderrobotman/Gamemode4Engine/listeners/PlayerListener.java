@@ -1,17 +1,17 @@
 package com.spiderrobotman.Gamemode4Engine.listeners;
 
-import com.spiderrobotman.Gamemode4Engine.command.BackCommand;
-import com.spiderrobotman.Gamemode4Engine.command.MsgCommand;
-import com.spiderrobotman.Gamemode4Engine.command.NickCommand;
-import com.spiderrobotman.Gamemode4Engine.command.RestrictCommand;
+import com.spiderrobotman.Gamemode4Engine.command.*;
 import com.spiderrobotman.Gamemode4Engine.handler.SpecialPlayerInventory;
 import com.spiderrobotman.Gamemode4Engine.main.Gamemode4Engine;
 import com.spiderrobotman.Gamemode4Engine.util.TextUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -21,6 +21,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Project: Gamemode4Engine
@@ -29,6 +31,15 @@ import java.util.HashMap;
  * Website: http://www.spiderrobotman.com
  */
 public class PlayerListener implements Listener {
+
+    private static <T, E> T getKeyByValue(Map<T, E> map, E value) {
+        for (Map.Entry<T, E> entry : map.entrySet()) {
+            if (Objects.equals(value, entry.getValue())) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
 
     @EventHandler
     public void onPlayerPreLogin(AsyncPlayerPreLoginEvent e) {
@@ -124,9 +135,17 @@ public class PlayerListener implements Listener {
                 }
             }
         }.runTask(Gamemode4Engine.plugin());
+
+        if (WatchCommand.previous.containsKey(e.getPlayer().getUniqueId())) {
+            {
+                e.getPlayer().teleport(WatchCommand.previous.get(e.getPlayer().getUniqueId()));
+                WatchCommand.previous.remove(e.getPlayer().getUniqueId());
+                e.getPlayer().setGameMode(GameMode.SURVIVAL);
+            }
+        }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerQuit(PlayerQuitEvent e) {
         Player player = e.getPlayer();
 
@@ -142,6 +161,10 @@ public class PlayerListener implements Listener {
 
         NickCommand.nicks.remove(e.getPlayer().getUniqueId());
         MsgCommand.history.remove(e.getPlayer().getUniqueId());
+        if (WatchCommand.watching.containsKey(e.getPlayer().getUniqueId())) {
+            e.getPlayer().setGameMode(GameMode.SURVIVAL);
+            WatchCommand.watching.remove(e.getPlayer().getUniqueId());
+        }
     }
 
     @EventHandler
@@ -158,6 +181,37 @@ public class PlayerListener implements Listener {
     public void onPlayerTeleport(PlayerTeleportEvent e) {
         if (e.getCause() == PlayerTeleportEvent.TeleportCause.COMMAND || e.getCause() == PlayerTeleportEvent.TeleportCause.PLUGIN) {
             BackCommand.updateLocation(e.getPlayer(), e.getFrom());
+        }
+        if ((e.getCause() == PlayerTeleportEvent.TeleportCause.SPECTATE || e.getCause() == PlayerTeleportEvent.TeleportCause.COMMAND) && WatchCommand.watching.containsKey(e.getPlayer().getUniqueId())) {
+            e.setCancelled(true);
+            e.getPlayer().sendMessage(ChatColor.RED + "You may not teleport while watching a player!");
+        }
+        if (WatchCommand.watching.containsValue(e.getPlayer().getUniqueId())) {
+            Player p1 = Bukkit.getPlayer(getKeyByValue(WatchCommand.watching, e.getPlayer().getUniqueId()));
+            p1.teleport(e.getTo());
+        }
+    }
+
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent e) {
+        if (WatchCommand.watching.containsValue(e.getPlayer().getUniqueId())) {
+            Player p1 = Bukkit.getPlayer(getKeyByValue(WatchCommand.watching, e.getPlayer().getUniqueId()));
+            if (p1.getSpectatorTarget() == null) {
+                if (p1.getLocation().distance(e.getTo()) > 25) {
+                    Location newLoc = e.getTo().clone();
+                    Location trgLoc = e.getFrom().clone();
+                    double xdiff = newLoc.getX() - trgLoc.getX();
+                    double ydiff = newLoc.getY() - trgLoc.getY();
+                    double zdiff = newLoc.getZ() - trgLoc.getZ();
+                    newLoc.add(xdiff, ydiff, zdiff);
+                    p1.teleport(p1.getLocation().add(xdiff, ydiff, zdiff));
+                }
+            }
+        }
+        if (WatchCommand.watching.containsKey(e.getPlayer().getUniqueId())) {
+            if (e.getTo().distance(Bukkit.getPlayer(WatchCommand.watching.get(e.getPlayer().getUniqueId())).getLocation()) > 25) {
+                e.setCancelled(true);
+            }
         }
     }
 
