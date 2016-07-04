@@ -27,7 +27,7 @@ public class RealNameTabCompleter implements TabCompleter {
                 for (String name : NickCommand.nicks.values()) {
 
                     String flat = ChatColor.stripColor(name.replace("&", "§"));
-                    if (!name.isEmpty()) {
+                    if (!name.isEmpty() && flat.beginsWith(args[0])) {
                         list.add(flat);
                     }
                 }
